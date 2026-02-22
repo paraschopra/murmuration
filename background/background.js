@@ -62,6 +62,8 @@ async function tryGenerate() {
   }
   const uniqueTitles = [...new Set(allTitles)];
 
+  console.log('Beauty on New Tabs: Total unique topics available:', uniqueTitles.length, '— will pick 3');
+
   if (uniqueTitles.length === 0) {
     console.log('Beauty on New Tabs: No titles available for generation');
     return;
