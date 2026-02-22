@@ -18,9 +18,11 @@ The architecture follows the same proven pattern from quotes-on-newtabs: content
 
 3. **Daily budget instead of hourly TTL, with dual trigger** — Instead of the original's 1-hour cache timer, we track generations per calendar day. Generation triggers both on scrape events AND on new tab load (if budget remains and topics exist but no artifacts yet). This ensures art is generated even if the user doesn't visit ChatGPT/Claude frequently.
 
+4. **3 random topics per generation** — From the full scraped title list (up to 20), we randomly pick 3 for each generation call. This maximizes diversity across artifacts while keeping the prompt focused. This number 3 should be user configurable in settings.
+
 4. **3 random topics per generation** — From the full scraped title list (up to 20), we randomly pick 3 for each generation call. This maximizes diversity across artifacts while keeping the prompt focused.
 
-5. **Keep all 3 API providers** — OpenAI, Anthropic, OpenRouter all work. The HTML generation prompt is provider-agnostic.
+5. **Keep all 3 API providers** — OpenAI, Anthropic, OpenRouter all work. The HTML generation prompt is provider-agnostic. But default to openrouter with claude sonnet 4.6 model. Search on openrouter website to pick exact names. Give haiku and opus also. And for OpenAI give GPT5.2 and all its variants.
 
 6. **No build system** — Match the original's convention: plain JS, `importScripts()`, `<script>` tags. No bundler.
 
