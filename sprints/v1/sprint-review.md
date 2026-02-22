@@ -211,6 +211,38 @@ Extension page (newtab.html)         Sandboxed page (sandbox.html)        LLM co
 
 ---
 
+## Cost Estimate
+
+Default model: `anthropic/claude-sonnet-4-20250514` via OpenRouter.
+
+| | Rate |
+|---|---|
+| Input (prompt) | $3 / million tokens |
+| Output (completion) | $15 / million tokens |
+
+**Observed usage**: ~14,000 tokens/day at 3 generations/day (default budget).
+
+Typical per-generation breakdown (based on observed data):
+- Prompt: ~800 tokens (short — the art prompt + topics)
+- Completion: ~3,800 tokens (the generated HTML/CSS/JS art piece)
+- Total: ~4,600 tokens per generation
+
+| Period | Tokens | Prompt cost | Completion cost | Total cost |
+|--------|--------|------------|----------------|------------|
+| Per generation | ~4,600 | $0.0024 | $0.057 | ~$0.06 |
+| Per day (3 gens) | ~14,000 | $0.007 | $0.17 | ~$0.18 |
+| Per month (30 days) | ~420,000 | $0.21 | $5.13 | ~$5.34 |
+| Per year | ~5,110,000 | $2.56 | $62.3 | ~$64.9 |
+
+**Summary**: At default settings (3 generations/day), the extension costs approximately **$0.18/day** or **$5.34/month**. The bulk of the cost (~96%) is output tokens since the LLM generates substantial HTML/CSS/JS code per art piece.
+
+**Cost levers**:
+- Reducing `dailyBudget` from 3 to 1 cuts cost to ~$1.78/month
+- Switching to a cheaper model (e.g. `anthropic/claude-sonnet-4-5` at $1/$5 per M tokens) would reduce cost by ~3x to ~$1.78/month at 3/day
+- `maxTokens: 8000` is the upper bound; actual completions average ~3,800 tokens
+
+---
+
 ## Executive Summary
 
 Beauty on New Tabs is a Chrome Manifest V3 extension built from scratch in vanilla JavaScript with zero external dependencies. It scrapes conversation titles from ChatGPT and Claude sidebars, sends 3 random topics to an LLM via OpenRouter, and displays the generated HTML/CSS/JS art piece in a sandboxed iframe on every new tab. The architecture follows a clean separation: content scripts scrape, a background service worker orchestrates, and the new tab page displays. Key design decisions include daily budget tracking instead of TTL caching, failed generations not consuming budget (with success rate stats), and strict CSP injection for iframe isolation.
