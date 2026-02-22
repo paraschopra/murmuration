@@ -65,6 +65,13 @@ Total tasks: 27
 - Generation stats: recordGenerationResult, getGenerationStats (success rate tracking)
 - 60/60 automated tests pass (tests/test-storage.js)
 
+### Task 6: shared/api-client.js — OpenRouter client (DONE)
+- OpenRouterClient class with generateCompletion(prompt, options)
+- Default model: anthropic/claude-sonnet-4-20250514
+- Handles 429 rate limits, 4xx/5xx errors, network errors
+- getApiClient factory function
+- 25/25 automated tests pass (tests/test-api-client.js)
+
 ## Next Steps
 
-Continue with Core Infrastructure: shared/api-client.js (OpenRouter client).
+Continue with Art Generation: shared/art-generator.js.

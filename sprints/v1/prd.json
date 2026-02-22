@@ -84,7 +84,7 @@
       "getApiClient(apiKey, model) factory function creates and returns an OpenRouterClient instance",
       "Module exports work in service worker context (self/importScripts)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Art Generation",
