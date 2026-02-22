@@ -35,6 +35,20 @@ html, body {
   to { transform: rotate(360deg); }
 }
 
+/* Generating */
+.generating-container {
+  text-align: center;
+}
+
+.generating-container .spinner {
+  margin: 0 auto 1rem;
+}
+
+.generating-container p {
+  color: #999;
+  font-size: 0.9rem;
+}
+
 /* Onboarding & Empty */
 .onboarding-container,
 .empty-container {

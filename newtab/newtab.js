@@ -16,10 +16,14 @@ async function init() {
     const canGenerate = await shouldGenerate();
     const conversations = await getConversations();
     if (canGenerate && conversations.length > 0) {
+      showState('generating-state');
       chrome.runtime.sendMessage({ type: 'REQUEST_GENERATION' });
+      // Poll for new artifacts while generating
+      pollForArtifacts();
+    } else {
+      showState('empty-state');
+      await showSyncStatus();
     }
-    showState('empty-state');
-    await showSyncStatus();
     return;
   }
 
@@ -95,6 +99,23 @@ function formatRelativeTime(timestamp) {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
+}
+
+function pollForArtifacts() {
+  let attempts = 0;
+  const maxAttempts = 30; // 30 seconds max
+  const interval = setInterval(async () => {
+    attempts++;
+    const artifacts = await getArtifacts();
+    if (artifacts && artifacts.length > 0) {
+      clearInterval(interval);
+      displayArtifact(artifacts);
+    } else if (attempts >= maxAttempts) {
+      clearInterval(interval);
+      showState('empty-state');
+      await showSyncStatus();
+    }
+  }, 1000);
 }
 
 function showState(stateId) {

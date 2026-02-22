@@ -26,6 +26,8 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'newtab', 'newtab.html')
 assert(html.includes('id="loading-state"'), 'loading-state div exists');
 assert(html.includes('id="onboarding-state"'), 'onboarding-state div exists');
 assert(html.includes('id="art-display"'), 'art-display div exists');
+assert(html.includes('id="generating-state"'), 'generating-state div exists');
+assert(html.includes('Generating art'), 'Generating state shows generating message');
 assert(html.includes('id="empty-state"'), 'empty-state div exists');
 assert(html.includes('class="spinner"'), 'Spinner element in loading state');
 assert(html.includes('id="setup-btn"'), 'Setup button in onboarding');
@@ -89,6 +91,9 @@ assert(js.includes('getArtifacts'), 'init calls getArtifacts');
 assert(js.includes('REQUEST_GENERATION'), 'Triggers generation from new tab if needed');
 assert(js.includes('shouldGenerate'), 'Checks budget before triggering');
 assert(js.includes('getConversations'), 'Checks conversations exist before triggering');
+assert(js.includes("showState('generating-state')") || js.includes('showState("generating-state")'),
+  'Shows generating state when generation is triggered');
+assert(js.includes('pollForArtifacts'), 'Polls for artifacts after triggering generation');
 
 // displayArtifact
 assert(js.includes('function displayArtifact'), 'displayArtifact function defined');
