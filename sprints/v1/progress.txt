@@ -100,6 +100,13 @@ Total tasks: 27
 - Auto-triggers generation from new tab if budget allows
 - 60/60 structural tests pass (tests/test-newtab.js)
 
+### Task 21-25: Options Page — options.html, options.css, options.js (DONE)
+- API config: key, model, daily budget with save/load
+- Generation stats: usage count, success rate, artifact count
+- Custom selectors: tabbed ChatGPT/Claude selector config
+- Clean minimal styling with tab switching UI
+- 58/58 structural tests pass (tests/test-options.js)
+
 ## Next Steps
 
-Continue with Options Page: options/options.html, options.js, options.css.
+Final task: Generate placeholder icons.

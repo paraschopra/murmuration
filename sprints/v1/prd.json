@@ -307,7 +307,7 @@
       "Script tags load ../shared/storage.js and options.js",
       "CSS is linked from options.css"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Options Page",
@@ -322,7 +322,7 @@
       "Hint text is smaller and muted color",
       "Status text (save confirmation) is green"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Options Page",
@@ -336,7 +336,7 @@
       "Save button shows 'Saved' status text that auto-clears after 2 seconds",
       "Daily budget is parsed as integer, defaults to 3 if invalid"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Options Page",
@@ -349,7 +349,7 @@
       "All stats are displayed in the Generation Status section",
       "Stats load without errors when storage is empty (first run)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Options Page",
@@ -363,7 +363,7 @@
       "Save Selectors button saves current platform's selectors to chrome.storage.sync",
       "Empty selector fields result in using extension defaults (no custom override stored)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Icons & Packaging",
