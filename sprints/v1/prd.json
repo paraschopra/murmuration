@@ -98,7 +98,7 @@
       "Results are randomized (calling twice with same input produces different order at least sometimes)",
       "TOPICS_PER_GENERATION constant is set to 3"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Art Generation",
@@ -112,7 +112,7 @@
       "Prompt instructs to pick one topic or common theme, not mix everything",
       "Prompt tells the LLM to reflect the user's state of mind and be creative/surprising"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Art Generation",
@@ -128,7 +128,7 @@
       "CSP is injected inside <head> if present, or after <html> wrapped in <head>, or prepended to the HTML",
       "connect-src 'none' is included to explicitly block fetch/WebSocket/EventSource"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Art Generation",
@@ -144,7 +144,7 @@
       "Logs progress messages to console with 'Beauty on New Tabs:' prefix",
       "Module exports all functions for both service worker and page contexts"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Background Worker",
