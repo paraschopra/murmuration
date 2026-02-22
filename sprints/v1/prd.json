@@ -27,7 +27,7 @@
       "getLastSynced returns empty object when no sync has occurred",
       "Module exports work in both service worker (self) and page (window) contexts"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Core Infrastructure",
@@ -40,7 +40,7 @@
       "If retry also fails, the error is logged but does not throw (graceful degradation)",
       "Each artifact object has fields: id, html, topics, timestamp"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Core Infrastructure",
@@ -54,7 +54,7 @@
       "getGenerationStatus returns {used: number, budget: number} with correct values",
       "Budget defaults to DEFAULT_DAILY_BUDGET (3) when no custom value is set"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Core Infrastructure",
@@ -67,7 +67,7 @@
       "Stats are stored in GENERATION_STATS key in chrome.storage.local",
       "Old stats entries are pruned to last 7 days on each write"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Core Infrastructure",

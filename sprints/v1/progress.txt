@@ -57,6 +57,14 @@ Total tasks: 27
 - Created manifest.json with MV3 fields, all permissions, content scripts, newtab override
 - 23/23 automated tests pass (tests/test-manifest.js)
 
+### Task 2-5: shared/storage.js — all storage functions (DONE)
+- Conversation storage: saveConversation (upsert, max 100), getConversations
+- Last synced: updateLastSynced, getLastSynced (per-platform timestamps)
+- Artifact storage: saveArtifact (prepend, max 20, quota error recovery), getArtifacts
+- Daily budget: getTodayKey, shouldGenerate, recordGeneration, getGenerationStatus
+- Generation stats: recordGenerationResult, getGenerationStats (success rate tracking)
+- 60/60 automated tests pass (tests/test-storage.js)
+
 ## Next Steps
 
-Continue with Core Infrastructure: shared/storage.js conversation storage functions.
+Continue with Core Infrastructure: shared/api-client.js (OpenRouter client).
