@@ -376,7 +376,7 @@
       "Icons are recognizable at their respective sizes",
       "Extension loads without icon-related errors in chrome://extensions"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Icons & Packaging",

@@ -107,6 +107,13 @@ Total tasks: 27
 - Clean minimal styling with tab switching UI
 - 58/58 structural tests pass (tests/test-options.js)
 
-## Next Steps
+### Task 26: Placeholder icons (DONE)
+- Generated via scripts/generate-icons.js (pure Node.js, no deps)
+- Black-and-white crosshair/target geometric design
+- Valid PNGs: 16x16 (127B), 48x48 (254B), 128x128 (834B)
 
-Final task: Generate placeholder icons.
+### Task 27: .gitignore (DONE — completed during PRD generation)
+
+## Final Status
+
+ALL 27/27 PRD TASKS COMPLETE. Extension is fully implemented.
