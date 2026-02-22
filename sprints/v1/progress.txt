@@ -1,0 +1,56 @@
+Beauty on New Tabs — PRD Progress
+===================================
+
+Generated: 2026-02-22
+Spec source: sprints/v1/plan.md + sprints/v1/change-required.md
+
+## User Spec (verbatim from change-required.md)
+
+What I want to display on new tabs is a self-contained HTML/CSS/JS (perhaps in an iframe?)
+that would be generated via a prompt. Based on given topics from ChatGPT/Claude, create a
+self-contained HTML/CSS/JS page to reflect the user's state of mind. Create minimal ASCII or
+related art. Black and white only, animated. For token savings: daily configurable fetches
+(default 3), with randomization using 3 random topics per fetch to ensure maximum diversity.
+
+## Key Decisions Made During PRD Generation
+
+1. Failed LLM generations do NOT consume daily budget. Success/failure stats are tracked
+   and displayed on the options page.
+2. Storage: Keep 20 artifacts × 500KB design. Handle quota errors gracefully by removing
+   oldest artifacts on overflow.
+3. API Providers: OpenRouter only for v1. Users can access Claude, GPT, and other models
+   through OpenRouter's unified API.
+4. Security: Added explicit connect-src 'none' to CSP. Strip existing CSP tags before injection.
+
+## Codex Review Highlights
+
+- Storage quota risk (10MB limit) — mitigated by graceful quota error handling
+- CSP injection fragility — mitigated by stripping existing CSP tags
+- Service worker lifecycle risk — acceptable for v1 (operations are typically fast)
+- LLM output unpredictability — mitigated by validation, size guards, and budget preservation on failure
+- SVG script injection risk — CSP blocks inline scripts in SVG context
+
+## Task Breakdown
+
+Total tasks: 27
+- Core Infrastructure: 6 tasks
+- Art Generation: 4 tasks
+- Background Worker: 3 tasks
+- Content Scripts: 2 tasks
+- New Tab Page: 5 tasks
+- Options Page: 5 tasks
+- Icons & Packaging: 2 tasks
+
+## Project Context
+
+- Platform: Chrome Extension (Manifest V3)
+- Language: Vanilla JavaScript (no build system)
+- Architecture: Adapted from quotes-on-newtabs extension
+- Files to create: ~15 new files
+- Dependencies: None (plain JS, Chrome APIs only)
+- External APIs: OpenRouter (unified LLM gateway)
+
+## Next Steps
+
+Begin implementation with /dev — start from Core Infrastructure tasks, building
+the foundation before moving to art generation, UI, and content scripts.

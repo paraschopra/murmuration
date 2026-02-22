@@ -1,0 +1,395 @@
+[
+  {
+    "category": "Core Infrastructure",
+    "description": "Create the extension directory structure and manifest.json with all required MV3 fields: permissions (storage, activeTab, tabs, scripting), host_permissions for chatgpt.com and claude.ai, background service worker entry, content script declarations, chrome_url_overrides for newtab, options_page, and icon paths.",
+    "steps": [
+      "Extension loads in chrome://extensions with no errors when 'Load unpacked' is used",
+      "manifest.json contains manifest_version: 3",
+      "Permissions array includes exactly: storage, activeTab, tabs, scripting",
+      "host_permissions includes https://chatgpt.com/* and https://claude.ai/*",
+      "background.service_worker points to background/background.js",
+      "content_scripts array has entries for chatgpt.com and claude.ai with correct js paths and run_at: document_idle",
+      "chrome_url_overrides.newtab points to newtab/newtab.html",
+      "options_page points to options/options.html",
+      "All referenced directories exist (background/, shared/, content-scripts/, newtab/, options/, icons/)"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Core Infrastructure",
+    "description": "Create shared/storage.js with conversation storage functions: saveConversation (upsert by id, max 100, newest first), getConversations, updateLastSynced (per platform timestamp), getLastSynced. Use chrome.storage.local with clear key constants.",
+    "steps": [
+      "STORAGE_KEYS object defines CONVERSATIONS, ARTIFACTS, LAST_SYNCED, GENERATION_LOG, GENERATION_STATS constants",
+      "saveConversation correctly upserts: adding a conversation with an existing id replaces it, a new id prepends it",
+      "saveConversation trims to MAX_CONVERSATIONS (100) entries",
+      "getConversations returns empty array when storage is empty",
+      "updateLastSynced stores per-platform timestamp (e.g. {chatgpt: 1234, claude: 5678})",
+      "getLastSynced returns empty object when no sync has occurred",
+      "Module exports work in both service worker (self) and page (window) contexts"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Core Infrastructure",
+    "description": "Add artifact storage functions to shared/storage.js: saveArtifact (prepend, keep max 20, handle quota errors gracefully), getArtifacts. On chrome.storage quota exceeded, remove oldest artifacts and retry the save.",
+    "steps": [
+      "saveArtifact prepends new artifact to the array",
+      "saveArtifact trims to MAX_ARTIFACTS (20) entries",
+      "getArtifacts returns empty array when storage is empty",
+      "When chrome.storage.local.set fails with quota error, the function removes the 5 oldest artifacts and retries",
+      "If retry also fails, the error is logged but does not throw (graceful degradation)",
+      "Each artifact object has fields: id, html, topics, timestamp"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Core Infrastructure",
+    "description": "Add daily budget tracking functions to shared/storage.js: getTodayKey (YYYY-MM-DD local), shouldGenerate (check count vs budget), recordGeneration (increment today's count, prune old entries to 7 days), getGenerationStatus (returns {used, budget}).",
+    "steps": [
+      "getTodayKey returns current date in YYYY-MM-DD format using local timezone",
+      "shouldGenerate returns true when today's generation count is below dailyBudget (default 3)",
+      "shouldGenerate returns false when today's count equals or exceeds budget",
+      "recordGeneration increments today's count in the generation log",
+      "recordGeneration prunes log entries older than 7 days",
+      "getGenerationStatus returns {used: number, budget: number} with correct values",
+      "Budget defaults to DEFAULT_DAILY_BUDGET (3) when no custom value is set"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Core Infrastructure",
+    "description": "Add generation success/failure stats tracking to shared/storage.js: recordGenerationResult(success: boolean), getGenerationStats() returning {total, succeeded, failed, successRate}. Stats reset per calendar day alongside the budget.",
+    "steps": [
+      "recordGenerationResult(true) increments the success counter for today",
+      "recordGenerationResult(false) increments the failure counter for today",
+      "getGenerationStats returns {total, succeeded, failed, successRate} for today",
+      "successRate is a percentage (0-100) calculated as succeeded/total*100, or 0 if no attempts",
+      "Stats are stored in GENERATION_STATS key in chrome.storage.local",
+      "Old stats entries are pruned to last 7 days on each write"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Core Infrastructure",
+    "description": "Create shared/api-client.js with OpenRouterClient class. Implements generateCompletion(prompt, options) that calls OpenRouter's /api/v1/chat/completions endpoint. Supports configurable model (default: anthropic/claude-sonnet-4-20250514). Returns {content: string}. Handles HTTP errors, rate limits, and timeouts.",
+    "steps": [
+      "OpenRouterClient constructor accepts apiKey and model parameters",
+      "Default model is 'anthropic/claude-sonnet-4-20250514' when no model is specified",
+      "generateCompletion sends POST to https://openrouter.ai/api/v1/chat/completions with correct headers (Authorization: Bearer, Content-Type: application/json)",
+      "Request body includes model, messages [{role: 'user', content: prompt}], max_tokens from options, temperature from options",
+      "Successful response returns {content: string} extracted from choices[0].message.content",
+      "HTTP 429 (rate limit) throws a descriptive error including retry-after if present",
+      "HTTP 4xx/5xx throws an error with the status code and error message from response body",
+      "Network/timeout errors are caught and re-thrown with descriptive messages",
+      "getApiClient(apiKey, model) factory function creates and returns an OpenRouterClient instance",
+      "Module exports work in service worker context (self/importScripts)"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Art Generation",
+    "description": "Create shared/art-generator.js with pickRandomTopics(titles, count) function. Uses Fisher-Yates shuffle on a copy of the input array and returns the first `count` elements. Never mutates the original array. Handles edge cases: fewer titles than count, empty array, count of 0.",
+    "steps": [
+      "pickRandomTopics returns exactly `count` items when titles.length >= count",
+      "pickRandomTopics returns all items when titles.length < count",
+      "pickRandomTopics returns empty array when titles is empty",
+      "pickRandomTopics returns empty array when count is 0",
+      "Original titles array is not mutated",
+      "Results are randomized (calling twice with same input produces different order at least sometimes)",
+      "TOPICS_PER_GENERATION constant is set to 3"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Art Generation",
+    "description": "Create buildArtPrompt(topics) function in shared/art-generator.js. Constructs the LLM prompt with the art generation instructions: self-contained HTML/CSS/JS, minimal ASCII/generative art, black and white only, animated, no external assets, under 8000 tokens. Topics are joined as comma-separated string at the end.",
+    "steps": [
+      "Prompt instructs LLM to create a self-contained HTML/CSS/JS page",
+      "Prompt specifies black and white only, white background preferred",
+      "Prompt specifies animated, minimal ASCII or related art styles (fractal, aquarium, scenery, glitchy, whimsical)",
+      "Prompt includes RULES section: no markdown, single HTML page, no external assets, grayscale only, under 8000 tokens",
+      "Prompt includes the topics as a comma-separated list",
+      "Prompt instructs to pick one topic or common theme, not mix everything",
+      "Prompt tells the LLM to reflect the user's state of mind and be creative/surprising"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Art Generation",
+    "description": "Create parseArtResponse(responseContent) function in shared/art-generator.js. Strips markdown code block wrappers, validates HTML contains meaningful tags, enforces 500KB size limit, strips any existing CSP meta tags, and injects the strict CSP meta tag into <head>.",
+    "steps": [
+      "Strips ```html...``` markdown code block wrapper if present",
+      "Strips plain ```...``` code block wrapper if present",
+      "Validates response contains at least one meaningful HTML tag (html, style, canvas, svg, body, div)",
+      "Throws error if response is under 50 characters",
+      "Throws error if response exceeds 500KB (500000 characters)",
+      "Strips any existing <meta http-equiv='Content-Security-Policy'> tags from the HTML before injection",
+      "Injects CSP meta tag: default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'",
+      "CSP is injected inside <head> if present, or after <html> wrapped in <head>, or prepended to the HTML",
+      "connect-src 'none' is included to explicitly block fetch/WebSocket/EventSource"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Art Generation",
+    "description": "Create the main generateArt(allTitles) async function in shared/art-generator.js. Reads API settings from chrome.storage.sync, creates the API client, picks random topics, builds the prompt, calls the LLM, parses the response, and returns a complete artifact object with id, html, topics, and timestamp.",
+    "steps": [
+      "Throws error if no API key is configured in chrome.storage.sync",
+      "Creates OpenRouterClient with stored apiKey and model",
+      "Calls pickRandomTopics with allTitles and TOPICS_PER_GENERATION (3)",
+      "Calls buildArtPrompt with the selected topics",
+      "Calls client.generateCompletion with maxTokens: 8000 and temperature: 1.0",
+      "Passes the response content through parseArtResponse",
+      "Returns artifact object with fields: id (art-{timestamp}-{random}), html, topics, timestamp",
+      "Logs progress messages to console with 'Beauty on New Tabs:' prefix",
+      "Module exports all functions for both service worker and page contexts"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Background Worker",
+    "description": "Create background/background.js with importScripts for shared modules and chrome.runtime.onMessage listener. Handle two message types: CONVERSATION_SCRAPED (save conversation, attempt generation) and REQUEST_GENERATION (attempt generation from new tab).",
+    "steps": [
+      "importScripts loads /shared/storage.js, /shared/api-client.js, /shared/art-generator.js",
+      "Message listener handles CONVERSATION_SCRAPED type messages",
+      "Message listener handles REQUEST_GENERATION type messages",
+      "Both handlers catch and log errors without crashing the service worker",
+      "Listener returns true to indicate async response handling",
+      "Service worker console shows no errors on extension load"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Background Worker",
+    "description": "Implement handleConversationScraped(data) in background.js. Debounces per platform (60s), saves conversation data to storage, updates last synced timestamp, then calls tryGenerate().",
+    "steps": [
+      "Debounce: ignores scrape messages from the same platform within 60 seconds",
+      "After debounce passes, saves conversation with id: '{platform}-{url}', platform, title, titles, url, timestamp",
+      "Calls updateLastSynced with the platform name",
+      "Calls tryGenerate after saving",
+      "Logs 'Debouncing scrape from {platform}' when debounced",
+      "Logs 'Received scraped data from {platform}' when processing"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Background Worker",
+    "description": "Implement tryGenerate() in background.js. Checks daily budget, gathers unique titles from all stored conversations, calls generateArt, saves the artifact, records the generation, and tracks success/failure stats. Failed generations do NOT consume budget.",
+    "steps": [
+      "Returns early if shouldGenerate() returns false (budget exhausted), with a log message",
+      "Returns early if no conversation titles exist, with a log message",
+      "Gathers all titles from stored conversations and deduplicates them",
+      "On successful generation: saves artifact, calls recordGeneration, calls recordGenerationResult(true)",
+      "On failed generation: calls recordGenerationResult(false) but does NOT call recordGeneration (budget preserved)",
+      "Logs success message with artifact size in bytes",
+      "Logs error message on failure with the error details"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Content Scripts",
+    "description": "Create content-scripts/chatgpt.js that scrapes conversation titles from ChatGPT's sidebar. Uses a CSS selector fallback chain to find sidebar navigation links. Extracts text content, deduplicates, and sends CONVERSATION_SCRAPED message to background. Uses MutationObserver for SPA navigation detection.",
+    "steps": [
+      "Defines a primary CSS selector targeting ChatGPT sidebar conversation links",
+      "Defines at least 2 fallback CSS selectors for when the primary fails",
+      "Tries each selector in order until one finds elements",
+      "Extracts text content from found elements, trims whitespace, filters empty strings",
+      "Deduplicates title list",
+      "Sends chrome.runtime.sendMessage with type: 'CONVERSATION_SCRAPED' and data: {platform: 'chatgpt', title, titles, url}",
+      "Sets up MutationObserver on document.body to detect SPA route changes",
+      "Debounces MutationObserver callbacks to avoid excessive scraping",
+      "All console.log messages prefixed with 'Beauty on New Tabs:'",
+      "Script runs at document_idle as specified in manifest"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Content Scripts",
+    "description": "Create content-scripts/claude.js that scrapes conversation titles from Claude's sidebar. Same architecture as chatgpt.js but with Claude-specific CSS selectors. Sends CONVERSATION_SCRAPED message with platform: 'claude'.",
+    "steps": [
+      "Defines a primary CSS selector targeting Claude sidebar conversation links",
+      "Defines at least 2 fallback CSS selectors",
+      "Tries selectors in order, extracts and deduplicates title text",
+      "Sends message with platform: 'claude' to background",
+      "Uses MutationObserver for SPA navigation detection with debounce",
+      "All console.log messages prefixed with 'Beauty on New Tabs:'",
+      "Script handles case where sidebar is collapsed or not visible (no errors thrown)"
+    ],
+    "passes": false
+  },
+  {
+    "category": "New Tab Page",
+    "description": "Create newtab/newtab.html with four state containers: loading-state (spinner), onboarding-state (no API key message + setup button), art-display (full-viewport iframe + metadata bar + refresh/settings buttons), and empty-state (no artifacts yet + links to ChatGPT/Claude + sync status).",
+    "steps": [
+      "HTML includes all four state divs: loading-state, onboarding-state, art-display, empty-state",
+      "loading-state contains a spinner element",
+      "onboarding-state contains heading, description text, and a 'Open Settings' button",
+      "art-display contains an iframe with sandbox='allow-scripts' and title='Generated Art'",
+      "art-display contains topic display element and budget display element",
+      "art-display contains refresh button (↻) and settings link (⚙)",
+      "empty-state contains links to chatgpt.com and claude.ai with target='_blank'",
+      "empty-state contains sync status display element",
+      "Script tags load ../shared/storage.js and newtab.js",
+      "CSS is linked from newtab.css"
+    ],
+    "passes": false
+  },
+  {
+    "category": "New Tab Page",
+    "description": "Create newtab/newtab.css with full-viewport layout. Styles for all four states: centered spinner for loading, centered card for onboarding/empty, and full-bleed iframe for art display. Minimal, clean aesthetic with system-ui font. Fixed-position metadata bar, refresh button, and settings icon at bottom.",
+    "steps": [
+      "html and body are 100% width/height with no overflow",
+      ".state containers use flexbox centering",
+      "Spinner animates with CSS rotation",
+      "Onboarding and empty containers have max-width constraint and centered text",
+      "iframe fills 100% width and 100% height with no border",
+      "Metadata bar is fixed at bottom-left with small font and muted color",
+      "Refresh button is fixed at bottom-right with circular border and hover state",
+      "Settings icon is fixed at bottom-right (offset from refresh) with hover state",
+      "All interactive elements have cursor: pointer"
+    ],
+    "passes": false
+  },
+  {
+    "category": "New Tab Page",
+    "description": "Create newtab/newtab.js with init() function that determines which state to show: onboarding (no API key), empty (no artifacts, optionally trigger generation), or art display (show random artifact in iframe). Runs on DOMContentLoaded.",
+    "steps": [
+      "init() checks chrome.storage.sync for apiKey",
+      "If no apiKey: shows onboarding-state, wires up setup button to chrome.runtime.openOptionsPage()",
+      "If apiKey exists: calls getArtifacts()",
+      "If no artifacts and shouldGenerate() and conversations exist: sends REQUEST_GENERATION message to background",
+      "If no artifacts: shows empty-state with sync status",
+      "If artifacts exist: calls displayArtifact to show a random one",
+      "DOMContentLoaded event triggers init()"
+    ],
+    "passes": false
+  },
+  {
+    "category": "New Tab Page",
+    "description": "Implement displayArtifact(artifacts) in newtab.js. Picks a random artifact, loads its HTML into the iframe via srcdoc, shows topics and budget status. Refresh button picks a different random artifact (never the same one consecutively when multiple exist).",
+    "steps": [
+      "Picks a random index from artifacts array",
+      "Sets iframe.srcdoc to the selected artifact's html",
+      "Displays artifact topics joined with ' · ' separator",
+      "Fetches and displays budget status as 'X/Y today'",
+      "Shows the art-display state",
+      "Refresh button picks a different random index (never same as current when length > 1)",
+      "Refresh button does nothing when only 1 artifact exists",
+      "Settings link calls chrome.runtime.openOptionsPage() on click"
+    ],
+    "passes": false
+  },
+  {
+    "category": "New Tab Page",
+    "description": "Implement showSyncStatus() and formatRelativeTime(timestamp) helpers in newtab.js. Shows when ChatGPT/Claude were last synced in human-readable relative time (just now, Xm ago, Xh ago, Xd ago).",
+    "steps": [
+      "showSyncStatus reads last synced timestamps for chatgpt and claude",
+      "Displays formatted relative times for each platform that has been synced",
+      "Shows 'No conversations synced yet' when no platforms have been synced",
+      "formatRelativeTime returns 'just now' for timestamps under 1 minute ago",
+      "formatRelativeTime returns 'Xm ago' for timestamps under 1 hour ago",
+      "formatRelativeTime returns 'Xh ago' for timestamps under 24 hours ago",
+      "formatRelativeTime returns 'Xd ago' for timestamps 24+ hours ago"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Options Page",
+    "description": "Create options/options.html with sections for: API Configuration (API key input, model input, daily budget number input), Generation Status (today's usage, success rate, artifact count), and Custom Selectors (tabbed ChatGPT/Claude selector config with primary and fallback inputs).",
+    "steps": [
+      "Page title is 'Beauty on New Tabs — Settings'",
+      "API Configuration section has: API key (password input), model (text input), daily budget (number input, min 1, max 20, default 3)",
+      "Save Settings button exists with status feedback area",
+      "Generation Status section shows: generated today X/Y, success rate, artifact count",
+      "Custom Selectors section has tab buttons for ChatGPT and Claude",
+      "Selector config has primary selector text input and fallback selectors textarea (one per line)",
+      "Save Selectors button exists",
+      "Script tags load ../shared/storage.js and options.js",
+      "CSS is linked from options.css"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Options Page",
+    "description": "Create options/options.css with clean, minimal styling. System-ui font, max-width container, section separators, proper form element styling, tab switching UI, and status text styling.",
+    "steps": [
+      "Container has max-width of ~560px centered on page",
+      "Sections have bottom border separators and consistent spacing",
+      "Form inputs (text, password, number, select, textarea) have consistent width and padding",
+      "Buttons have dark background with hover states",
+      "Secondary buttons (selector save) have outlined/light style",
+      "Tab buttons show active state with dark background and white text",
+      "Hint text is smaller and muted color",
+      "Status text (save confirmation) is green"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Options Page",
+    "description": "Create options/options.js with DOMContentLoaded handler that loads saved settings (apiKey, model, dailyBudget) from chrome.storage.sync, populates form fields, and wires up the Save Settings button to persist values back to chrome.storage.sync.",
+    "steps": [
+      "On load: reads apiKey, model, dailyBudget from chrome.storage.sync",
+      "Populates apiKey input with saved value (if any)",
+      "Populates model input with saved value (if any)",
+      "Populates dailyBudget input with saved value or default 3",
+      "Save button writes all values to chrome.storage.sync",
+      "Save button shows 'Saved' status text that auto-clears after 2 seconds",
+      "Daily budget is parsed as integer, defaults to 3 if invalid"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Options Page",
+    "description": "Implement generation stats display in options.js. On page load, show today's generation count vs budget, success rate percentage, and total cached artifact count. Stats update on page load.",
+    "steps": [
+      "Calls getGenerationStatus() and displays 'Generated today: X / Y'",
+      "Calls getGenerationStats() and displays success rate as percentage",
+      "Shows 'No attempts today' when no generations have been attempted",
+      "Calls getArtifacts() and displays 'N art pieces cached'",
+      "All stats are displayed in the Generation Status section",
+      "Stats load without errors when storage is empty (first run)"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Options Page",
+    "description": "Implement custom selector tab switching and save/load in options.js. Tabs switch between ChatGPT and Claude selector configs. Each platform stores a primary selector string and array of fallback selector strings in chrome.storage.sync.",
+    "steps": [
+      "Clicking ChatGPT tab loads chatgptSelectors from chrome.storage.sync",
+      "Clicking Claude tab loads claudeSelectors from chrome.storage.sync",
+      "Active tab has visual active state, inactive tab has default state",
+      "Primary selector input populates with saved value or empty string",
+      "Fallback selectors textarea populates with saved values (one per line) or empty",
+      "Save Selectors button saves current platform's selectors to chrome.storage.sync",
+      "Empty selector fields result in using extension defaults (no custom override stored)"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Icons & Packaging",
+    "description": "Generate simple placeholder icons at icons/icon16.png, icons/icon48.png, icons/icon128.png. Black-and-white geometric design (e.g., a simple abstract shape or letter) matching the extension's minimal aesthetic. Can be generated programmatically using canvas or a simple SVG-to-PNG approach.",
+    "steps": [
+      "icons/icon16.png exists and is a valid 16x16 PNG image",
+      "icons/icon48.png exists and is a valid 48x48 PNG image",
+      "icons/icon128.png exists and is a valid 128x128 PNG image",
+      "All icons are black-and-white or grayscale",
+      "Icons are recognizable at their respective sizes",
+      "Extension loads without icon-related errors in chrome://extensions"
+    ],
+    "passes": false
+  },
+  {
+    "category": "Icons & Packaging",
+    "description": "Create .gitignore file with appropriate entries for the project: .env files, node_modules (even though not used, for safety), OS files (.DS_Store, Thumbs.db), and any editor-specific files.",
+    "steps": [
+      ".gitignore file exists in project root",
+      "Contains .env and .env.* patterns",
+      "Contains node_modules/",
+      "Contains .DS_Store",
+      "Contains Thumbs.db",
+      "Contains common editor patterns (*.swp, .vscode/, .idea/)",
+      "Does not exclude any extension source files that should be tracked"
+    ],
+    "passes": false
+  }
+]
