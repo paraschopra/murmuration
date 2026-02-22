@@ -50,7 +50,13 @@ Total tasks: 27
 - Dependencies: None (plain JS, Chrome APIs only)
 - External APIs: OpenRouter (unified LLM gateway)
 
+## Implementation Log
+
+### Task 1: Directory structure + manifest.json (DONE)
+- Created all 6 directories: background/, shared/, content-scripts/, newtab/, options/, icons/
+- Created manifest.json with MV3 fields, all permissions, content scripts, newtab override
+- 23/23 automated tests pass (tests/test-manifest.js)
+
 ## Next Steps
 
-Begin implementation with /dev — start from Core Infrastructure tasks, building
-the foundation before moving to art generation, UI, and content scripts.
+Continue with Core Infrastructure: shared/storage.js conversation storage functions.

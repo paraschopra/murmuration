@@ -13,7 +13,7 @@
       "options_page points to options/options.html",
       "All referenced directories exist (background/, shared/, content-scripts/, newtab/, options/, icons/)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Core Infrastructure",
@@ -390,6 +390,6 @@
       "Contains common editor patterns (*.swp, .vscode/, .idea/)",
       "Does not exclude any extension source files that should be tracked"
     ],
-    "passes": false
+    "passes": true
   }
 ]
