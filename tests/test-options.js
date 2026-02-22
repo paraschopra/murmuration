@@ -89,6 +89,19 @@ assert(js.includes('No attempts today'), 'Shows "No attempts today" when no atte
 assert(js.includes('getArtifacts'), 'Gets artifact count');
 assert(js.includes('art pieces cached'), 'Shows cached count text');
 
+// Token usage
+assert(html.includes('id="token-usage"'), 'Token usage container exists');
+assert(html.includes('Token Usage'), 'Token usage section heading exists');
+assert(js.includes('loadTokenUsage'), 'loadTokenUsage function defined');
+assert(js.includes('getTokenUsage'), 'Calls getTokenUsage from storage');
+assert(js.includes('token-table'), 'Creates token usage table');
+assert(js.includes('promptTokens'), 'Shows prompt tokens');
+assert(js.includes('completionTokens'), 'Shows completion tokens');
+assert(js.includes('totalTokens'), 'Shows total tokens');
+assert(js.includes('toLocaleString'), 'Formats token numbers with commas');
+assert(css.includes('.token-table'), 'Token table styled');
+assert(css.includes('.token-total'), 'Token total styled');
+
 // Selector tabs
 assert(js.includes('setupSelectorTabs'), 'setupSelectorTabs function defined');
 assert(js.includes('chatgptSelectors'), 'Handles chatgptSelectors key');

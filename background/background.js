@@ -72,6 +72,9 @@ async function tryGenerate() {
     await saveArtifact(artifact);
     await recordGeneration();
     await recordGenerationResult(true);
+    if (artifact.usage) {
+      await recordTokenUsage(artifact.usage);
+    }
     console.log('Beauty on New Tabs: Artifact saved successfully, size:', artifact.html.length, 'bytes');
   } catch (err) {
     await recordGenerationResult(false);

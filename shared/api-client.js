@@ -57,7 +57,15 @@ class OpenRouterClient {
       ? data.choices[0].message.content
       : '';
 
-    return { content };
+    const usage = data.usage || {};
+    return {
+      content,
+      usage: {
+        promptTokens: usage.prompt_tokens || 0,
+        completionTokens: usage.completion_tokens || 0,
+        totalTokens: usage.total_tokens || 0
+      }
+    };
   }
 }
 

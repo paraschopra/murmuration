@@ -37,6 +37,180 @@ beauty-on-new-tabs/
 └── sprints/v1/                  # Planning artifacts
 ```
 
+## End-to-End Generation Flow
+
+This section documents the complete lifecycle of an art generation — from visiting ChatGPT/Claude to seeing art on a new tab.
+
+### Step 1: Scraping Conversation Titles
+
+```
+User visits chatgpt.com or claude.ai
+         │
+         ▼
+Content script loads (run_at: document_idle)
+         │
+         ├── 3-second initial delay (SCRAPE_DELAY_MS)
+         │
+         ▼
+getSelectors()
+  ├── Read custom selectors from chrome.storage.sync (chatgptSelectors / claudeSelectors)
+  └── Prepend custom selectors to DEFAULT_SELECTORS chain
+         │
+         ▼
+extractTitles(selectors)
+  ├── Try each selector in order via document.querySelectorAll()
+  ├── First selector returning elements wins
+  ├── Filter: 3 <= text.length <= 200
+  ├── Claude only: filter out NOISE_ITEMS (new chat, chats, projects, recents, starred)
+  ├── Deduplicate via new Set()
+  └── Cap at MAX_TITLES (20)
+         │
+         ▼
+chrome.runtime.sendMessage({
+  type: 'CONVERSATION_SCRAPED',
+  data: { platform, title, titles[], url }
+})
+         │
+         ▼
+MutationObserver continues watching for SPA navigation
+  └── Re-triggers scrapeAndSend() with 2s debounce on DOM changes
+```
+
+### Step 2: Background Service Worker Processing
+
+```
+Message received by chrome.runtime.onMessage listener
+         │
+         ▼
+handleConversationScraped(data)
+  ├── Debounce check: skip if same platform scraped within 60s
+  ├── Build conversation object: { id: '<platform>-<url>', platform, titles, url, timestamp }
+  ├── saveConversation() → upsert into chrome.storage.local (max 100 conversations)
+  ├── updateLastSynced(platform) → per-platform timestamp
+  └── tryGenerate()
+```
+
+### Step 3: Art Generation Pipeline
+
+```
+tryGenerate()
+  │
+  ├── shouldGenerate() → check daily budget
+  │     ├── Read dailyBudget from chrome.storage.sync (default: 3)
+  │     ├── Read today's count from generationLog
+  │     └── Return todayCount < budget
+  │
+  ├── If budget exhausted → log and return (no generation)
+  │
+  ├── getConversations() → gather all stored conversations
+  │     ├── Flatten all conv.titles arrays
+  │     └── Deduplicate via new Set() → uniqueTitles[]
+  │
+  ├── If no titles → log and return
+  │
+  └── generateArt(uniqueTitles)
+        │
+        ├── Read apiKey + model from chrome.storage.sync
+        │
+        ├── pickRandomTopics(uniqueTitles, 3)
+        │     └── Fisher-Yates shuffle on copy, return first 3
+        │
+        ├── buildArtPrompt(topics)
+        │     └── Multi-paragraph prompt with RULES:
+        │           - Self-contained HTML/CSS/JS
+        │           - Black & white, animated
+        │           - No external assets
+        │           - Under 8000 tokens
+        │
+        ├── OpenRouterClient.generateCompletion(prompt, {maxTokens: 8000, temperature: 1.0})
+        │     ├── POST https://openrouter.ai/api/v1/chat/completions
+        │     ├── Headers: Authorization Bearer, Content-Type JSON
+        │     └── Returns { content, usage: {promptTokens, completionTokens, totalTokens} }
+        │
+        ├── parseArtResponse(response.content)
+        │     ├── Strip markdown code block wrappers (```html...```)
+        │     ├── Validate: must contain <html|style|canvas|svg|body|div> tags
+        │     ├── Validate: length >= 50 bytes, <= 500KB
+        │     ├── Strip existing CSP meta tags
+        │     └── Inject strict CSP: default-src 'none'; style-src 'unsafe-inline';
+        │           script-src 'unsafe-inline'; img-src data:; connect-src 'none';
+        │
+        └── Return artifact: { id, html, topics, timestamp, usage }
+```
+
+### Step 4: Saving Results
+
+```
+tryGenerate() continued:
+  │
+  ├── ON SUCCESS:
+  │     ├── saveArtifact(artifact) → prepend to chrome.storage.local (max 20)
+  │     │     └── On QUOTA_BYTES error: remove 5 oldest, retry once
+  │     ├── recordGeneration() → increment today's count in generationLog
+  │     ├── recordGenerationResult(true) → increment succeeded in generationStats
+  │     └── recordTokenUsage(artifact.usage) → accumulate daily token counts
+  │
+  └── ON FAILURE:
+        ├── recordGenerationResult(false) → increment failed in generationStats
+        └── Budget NOT consumed (recordGeneration not called)
+```
+
+### Step 5: Displaying Art on New Tab
+
+```
+User opens new tab → newtab.html loads
+         │
+         ▼
+init()
+  ├── Check chrome.storage.sync for apiKey
+  │     └── Missing → show onboarding state ("Open Settings" button)
+  │
+  ├── getArtifacts()
+  │     ├── Empty → check if generation possible:
+  │     │     ├── shouldGenerate() && getConversations().length > 0
+  │     │     ├── If yes → send REQUEST_GENERATION to background
+  │     │     └── Show empty state with sync status
+  │     │
+  │     └── Has artifacts → displayArtifact(artifacts)
+  │
+  └── displayArtifact(artifacts)
+        ├── Pick random starting index
+        ├── Load sandbox.html in iframe (manifest-sandboxed page)
+        │     └── Allows unsafe-inline scripts (bypasses extension CSP)
+        ├── On iframe load → postMessage(artifact.html) to sandbox
+        │     └── sandbox.html sets nested iframe srcdoc = received HTML
+        ├── Show topics (joined with · separator) in hover info popup
+        ├── Show budget status (X/Y today)
+        │
+        ├── Refresh button → pick different random index (do-while loop)
+        │     └── postMessage new artifact HTML to sandbox
+        │
+        └── Settings link → chrome.runtime.openOptionsPage()
+```
+
+### Trigger Points
+
+Art generation can be triggered from two places:
+1. **Content script scrape** → `CONVERSATION_SCRAPED` message → `handleConversationScraped()` → `tryGenerate()`
+2. **New tab opened** (with no artifacts) → `REQUEST_GENERATION` message → `handleGenerationRequest()` → `tryGenerate()`
+
+Both paths converge at `tryGenerate()` which handles budget checking and deduplication.
+
+### Security Boundary
+
+```
+Extension page (newtab.html)         Sandboxed page (sandbox.html)        LLM content
+  CSP: script-src 'self'       ──►     CSP: unsafe-inline allowed    ──►   CSP meta injected:
+  (no inline scripts)                   (manifest sandbox)                  connect-src 'none'
+                                                                            default-src 'none'
+                               postMessage()                    srcdoc
+                               ──────────────►          ──────────────►
+                                                  iframe[sandbox=allow-scripts]
+                                                  (no same-origin, no forms, no popups)
+```
+
+---
+
 ## Executive Summary
 
 Beauty on New Tabs is a Chrome Manifest V3 extension built from scratch in vanilla JavaScript with zero external dependencies. It scrapes conversation titles from ChatGPT and Claude sidebars, sends 3 random topics to an LLM via OpenRouter, and displays the generated HTML/CSS/JS art piece in a sandboxed iframe on every new tab. The architecture follows a clean separation: content scripts scrape, a background service worker orchestrates, and the new tab page displays. Key design decisions include daily budget tracking instead of TTL caching, failed generations not consuming budget (with success rate stats), and strict CSP injection for iframe isolation.

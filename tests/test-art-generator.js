@@ -206,7 +206,10 @@ async function testGenerateArt() {
   fetchResponse = {
     ok: true,
     status: 200,
-    json: async () => ({ choices: [{ message: { content: htmlContent } }] }),
+    json: async () => ({
+      choices: [{ message: { content: htmlContent } }],
+      usage: { prompt_tokens: 500, completion_tokens: 1500, total_tokens: 2000 }
+    }),
     text: async () => JSON.stringify({ choices: [{ message: { content: htmlContent } }] })
   };
 
@@ -216,6 +219,8 @@ async function testGenerateArt() {
   assert(Array.isArray(artifact.topics) && artifact.topics.length === 3, 'Artifact has 3 topics');
   assert(typeof artifact.timestamp === 'number', 'Artifact has timestamp');
   assert(artifact.html.includes('Content-Security-Policy'), 'HTML has CSP injected');
+  assert(artifact.usage !== undefined, 'Artifact includes usage data');
+  assert(artifact.usage.totalTokens === 2000, 'Artifact usage has correct totalTokens');
 }
 
 // --- Module exports ---

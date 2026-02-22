@@ -284,6 +284,42 @@ async function testGenerationStats() {
   assert(Object.keys(statsStore).length <= 7, 'Old stats entries pruned to 7 days');
 }
 
+async function testTokenUsage() {
+  console.log('\n--- Token Usage ---');
+  resetStore();
+
+  // getTokenUsage returns empty object when empty
+  let usage = await getTokenUsage();
+  assert(typeof usage === 'object' && Object.keys(usage).length === 0, 'getTokenUsage returns {} when empty');
+
+  // recordTokenUsage stores token data for today
+  await recordTokenUsage({ promptTokens: 100, completionTokens: 200, totalTokens: 300 });
+  usage = await getTokenUsage();
+  const today = getTodayKey();
+  assert(usage[today] !== undefined, 'Token usage recorded for today');
+  assert(usage[today].promptTokens === 100, 'Prompt tokens recorded correctly');
+  assert(usage[today].completionTokens === 200, 'Completion tokens recorded correctly');
+  assert(usage[today].totalTokens === 300, 'Total tokens recorded correctly');
+
+  // recordTokenUsage accumulates within same day
+  await recordTokenUsage({ promptTokens: 50, completionTokens: 150, totalTokens: 200 });
+  usage = await getTokenUsage();
+  assert(usage[today].promptTokens === 150, 'Prompt tokens accumulated');
+  assert(usage[today].completionTokens === 350, 'Completion tokens accumulated');
+  assert(usage[today].totalTokens === 500, 'Total tokens accumulated');
+
+  // Prune old entries to 10 days
+  resetStore();
+  const oldUsage = {};
+  for (let i = 1; i <= 15; i++) {
+    oldUsage[`2020-01-${String(i).padStart(2, '0')}`] = { promptTokens: 10, completionTokens: 20, totalTokens: 30 };
+  }
+  store.local[STORAGE_KEYS.TOKEN_USAGE] = oldUsage;
+  await recordTokenUsage({ promptTokens: 1, completionTokens: 2, totalTokens: 3 });
+  usage = await getTokenUsage();
+  assert(Object.keys(usage).length <= 10, 'Token usage pruned to last 10 days');
+}
+
 async function testModuleExports() {
   console.log('\n--- Module Exports ---');
 
@@ -299,6 +335,8 @@ async function testModuleExports() {
   assert(typeof getTodayKey === 'function', 'getTodayKey exported');
   assert(typeof recordGenerationResult === 'function', 'recordGenerationResult exported');
   assert(typeof getGenerationStats === 'function', 'getGenerationStats exported');
+  assert(typeof recordTokenUsage === 'function', 'recordTokenUsage exported');
+  assert(typeof getTokenUsage === 'function', 'getTokenUsage exported');
 }
 
 // Run all tests
@@ -309,6 +347,7 @@ async function testModuleExports() {
     await testArtifactStorage();
     await testDailyBudget();
     await testGenerationStats();
+    await testTokenUsage();
     await testModuleExports();
   } catch (e) {
     console.error('Test runner error:', e);

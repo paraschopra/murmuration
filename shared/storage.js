@@ -3,7 +3,8 @@ const STORAGE_KEYS = {
   ARTIFACTS: 'artifacts',
   LAST_SYNCED: 'lastSynced',
   GENERATION_LOG: 'generationLog',
-  GENERATION_STATS: 'generationStats'
+  GENERATION_STATS: 'generationStats',
+  TOKEN_USAGE: 'tokenUsage'
 };
 
 const MAX_CONVERSATIONS = 100;
@@ -152,6 +153,34 @@ async function getGenerationStats() {
   };
 }
 
+// --- Token usage tracking ---
+
+async function recordTokenUsage(tokens) {
+  const result = await chrome.storage.local.get(STORAGE_KEYS.TOKEN_USAGE);
+  const usage = result[STORAGE_KEYS.TOKEN_USAGE] || {};
+  const today = getTodayKey();
+
+  if (!usage[today]) {
+    usage[today] = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+  }
+
+  usage[today].promptTokens += tokens.promptTokens || 0;
+  usage[today].completionTokens += tokens.completionTokens || 0;
+  usage[today].totalTokens += tokens.totalTokens || 0;
+
+  // Prune old entries (keep last 10 days)
+  const keys = Object.keys(usage).sort().slice(-10);
+  const pruned = {};
+  keys.forEach(k => pruned[k] = usage[k]);
+
+  await chrome.storage.local.set({ [STORAGE_KEYS.TOKEN_USAGE]: pruned });
+}
+
+async function getTokenUsage() {
+  const result = await chrome.storage.local.get(STORAGE_KEYS.TOKEN_USAGE);
+  return result[STORAGE_KEYS.TOKEN_USAGE] || {};
+}
+
 // --- Module export ---
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -159,6 +188,7 @@ if (typeof module !== 'undefined' && module.exports) {
     saveArtifact, getArtifacts,
     shouldGenerate, recordGeneration, getGenerationStatus, getTodayKey,
     recordGenerationResult, getGenerationStats,
+    recordTokenUsage, getTokenUsage,
     STORAGE_KEYS, MAX_CONVERSATIONS, MAX_ARTIFACTS, DEFAULT_DAILY_BUDGET
   };
 } else {
@@ -168,6 +198,7 @@ if (typeof module !== 'undefined' && module.exports) {
     saveArtifact, getArtifacts,
     shouldGenerate, recordGeneration, getGenerationStatus, getTodayKey,
     recordGenerationResult, getGenerationStats,
+    recordTokenUsage, getTokenUsage,
     STORAGE_KEYS, MAX_CONVERSATIONS, MAX_ARTIFACTS, DEFAULT_DAILY_BUDGET
   });
 }

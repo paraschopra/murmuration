@@ -87,10 +87,11 @@ async function generateArt(allTitles) {
     id: `art-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     html: html,
     topics: topics,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    usage: response.usage
   };
 
-  console.log('Beauty on New Tabs: Art generated successfully, size:', html.length, 'bytes');
+  console.log('Beauty on New Tabs: Art generated successfully, size:', html.length, 'bytes, tokens:', response.usage.totalTokens);
   return artifact;
 }
 

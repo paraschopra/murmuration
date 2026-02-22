@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load generation status and stats
   await loadStatus();
 
+  // Load token usage history
+  await loadTokenUsage();
+
   // Selector tabs
   setupSelectorTabs();
 });
@@ -51,6 +54,40 @@ async function loadStatus() {
   const artifacts = await getArtifacts();
   document.getElementById('artifact-count').textContent =
     `${artifacts.length} art pieces cached`;
+}
+
+async function loadTokenUsage() {
+  const usage = await getTokenUsage();
+  const container = document.getElementById('token-usage');
+  const days = Object.keys(usage).sort().reverse();
+
+  if (days.length === 0) {
+    container.textContent = 'No token usage recorded yet';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'token-table';
+  table.innerHTML = '<thead><tr><th>Date</th><th>Prompt</th><th>Completion</th><th>Total</th></tr></thead>';
+  const tbody = document.createElement('tbody');
+
+  let grandTotal = 0;
+  for (const day of days) {
+    const d = usage[day];
+    grandTotal += d.totalTokens;
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${day}</td><td>${d.promptTokens.toLocaleString()}</td><td>${d.completionTokens.toLocaleString()}</td><td>${d.totalTokens.toLocaleString()}</td>`;
+    tbody.appendChild(row);
+  }
+
+  table.appendChild(tbody);
+  container.innerHTML = '';
+  container.appendChild(table);
+
+  const totalEl = document.createElement('div');
+  totalEl.className = 'token-total';
+  totalEl.textContent = `Total: ${grandTotal.toLocaleString()} tokens`;
+  container.appendChild(totalEl);
 }
 
 function setupSelectorTabs() {

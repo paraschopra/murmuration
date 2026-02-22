@@ -41,7 +41,10 @@ function mockSuccess(content) {
   fetchResponse = {
     ok: true,
     status: 200,
-    json: async () => ({ choices: [{ message: { content } }] }),
+    json: async () => ({
+      choices: [{ message: { content } }],
+      usage: { prompt_tokens: 100, completion_tokens: 200, total_tokens: 300 }
+    }),
     text: async () => JSON.stringify({ choices: [{ message: { content } }] })
   };
 }
@@ -77,7 +80,11 @@ async function testGenerateCompletion() {
   const result = await client.generateCompletion('Generate art', { maxTokens: 8000, temperature: 1.0 });
 
   // Check return value
-  assert(result.content === '<html><body>Test art</body></html>', 'Returns {content: string} from response');
+  assert(result.content === '<html><body>Test art</body></html>', 'Returns content from response');
+  assert(result.usage !== undefined, 'Returns usage object');
+  assert(result.usage.promptTokens === 100, 'Usage includes promptTokens');
+  assert(result.usage.completionTokens === 200, 'Usage includes completionTokens');
+  assert(result.usage.totalTokens === 300, 'Usage includes totalTokens');
 
   // Check fetch was called correctly
   assert(fetchCalls.length === 1, 'fetch called once');
