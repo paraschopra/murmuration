@@ -83,3 +83,15 @@ node tests/test-options.js
 - **Model**: OpenRouter model ID (default: `anthropic/claude-sonnet-4-20250514`)
 - **Daily Budget**: Max art generations per day (default: 3, range: 1-20)
 - **Custom Selectors**: Override CSS selectors for ChatGPT/Claude scraping
+
+## Estimated Cost
+
+Using Claude Sonnet 4.6 (`anthropic/claude-sonnet-4-6`) via OpenRouter at $3/M input, $15/M output tokens:
+
+| Daily budget | Tokens/day | Cost/day | Cost/month |
+|---|---|---|---|
+| 1 generation | ~4,600 | ~$0.06 | ~$1.78 |
+| 3 generations (default) | ~14,000 | ~$0.18 | ~$5.34 |
+| 5 generations | ~23,000 | ~$0.30 | ~$8.90 |
+
+Each generation uses ~800 prompt tokens and ~3,800 completion tokens. Token usage is tracked in the extension settings page.
