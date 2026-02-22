@@ -16,6 +16,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Selector tabs
   setupSelectorTabs();
+
+  // Refresh stats when page becomes visible (e.g. switching tabs back)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      loadStatus();
+      loadTokenUsage();
+    }
+  });
 });
 
 async function saveSettings() {
