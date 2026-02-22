@@ -22,12 +22,21 @@
 
   <div id="art-display" class="state" style="display:none">
     <iframe id="art-frame" sandbox="allow-scripts" title="Generated Art"></iframe>
-    <div id="art-meta">
-      <span id="art-topics"></span>
-      <span id="art-budget"></span>
+    <div id="art-footer">
+      <div id="footer-left">
+        <span id="footer-label">Beauty on New Tabs</span>
+        <div id="info-trigger">&#x24D8;
+          <div id="info-popup">
+            <div id="art-topics"></div>
+            <div id="art-budget"></div>
+          </div>
+        </div>
+      </div>
+      <div id="footer-right">
+        <button id="refresh-btn" class="icon-btn" title="Show another">&#x21bb;</button>
+        <a id="settings-link" href="#" title="Settings">&#x2699;</a>
+      </div>
     </div>
-    <button id="refresh-btn" class="icon-btn" title="Show another">&#x21bb;</button>
-    <a id="settings-link" href="#" title="Settings">&#x2699;</a>
   </div>
 
   <div id="empty-state" class="state" style="display:none">

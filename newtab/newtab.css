@@ -83,27 +83,95 @@ html, body {
   background: #fff;
 }
 
-#art-meta {
+/* Footer bar */
+#art-footer {
   position: fixed;
-  bottom: 12px;
-  left: 16px;
-  font-size: 0.75rem;
-  color: #aaa;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+#art-footer:hover {
+  opacity: 1;
+}
+
+#footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#footer-label {
+  font-size: 0.7rem;
+  color: #bbb;
+  letter-spacing: 0.02em;
+}
+
+#info-trigger {
+  position: relative;
+  font-size: 0.75rem;
+  color: #ccc;
+  cursor: pointer;
+  line-height: 1;
+}
+
+#info-trigger:hover {
+  color: #888;
+}
+
+#info-popup {
+  display: none;
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  min-width: 240px;
+  max-width: 400px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  font-size: 0.75rem;
+  color: #666;
+  line-height: 1.6;
+  white-space: normal;
+}
+
+#info-trigger:hover #info-popup {
+  display: block;
+}
+
+#info-popup #art-topics {
+  margin-bottom: 4px;
+  color: #555;
+}
+
+#info-popup #art-budget {
+  color: #999;
+  font-size: 0.7rem;
+}
+
+#footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 #refresh-btn {
-  position: fixed;
-  bottom: 12px;
-  right: 56px;
   background: none;
   border: 1px solid #ddd;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1rem;
-  color: #aaa;
+  width: 26px;
+  height: 26px;
+  font-size: 0.85rem;
+  color: #bbb;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -116,11 +184,8 @@ html, body {
 }
 
 #settings-link {
-  position: fixed;
-  bottom: 12px;
-  right: 16px;
-  font-size: 1.2rem;
-  color: #aaa;
+  font-size: 1rem;
+  color: #bbb;
   text-decoration: none;
   cursor: pointer;
 }

@@ -31,18 +31,27 @@ function displayArtifact(artifacts) {
   let currentIndex = Math.floor(Math.random() * artifacts.length);
   const frame = document.getElementById('art-frame');
   const topicsEl = document.getElementById('art-topics');
+  const budgetEl = document.getElementById('art-budget');
+  let sandboxReady = false;
 
   function showArtifact(index) {
     const artifact = artifacts[index];
-    frame.srcdoc = artifact.html;
+    if (sandboxReady) {
+      frame.contentWindow.postMessage(artifact.html, '*');
+    }
     topicsEl.textContent = artifact.topics.join(' \u00b7 ');
   }
 
-  showArtifact(currentIndex);
+  // Load sandbox page, then send first artifact via postMessage
+  frame.src = '../sandbox.html';
+  frame.addEventListener('load', function onLoad() {
+    frame.removeEventListener('load', onLoad);
+    sandboxReady = true;
+    showArtifact(currentIndex);
+  });
 
   // Show budget status
   getGenerationStatus().then(status => {
-    const budgetEl = document.getElementById('art-budget');
     budgetEl.textContent = `${status.used}/${status.budget} today`;
   });
 

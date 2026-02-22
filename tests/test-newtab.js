@@ -33,12 +33,12 @@ assert(html.includes('Open Settings'), 'Open Settings button text');
 assert(html.includes('sandbox="allow-scripts"'), 'iframe has sandbox=allow-scripts');
 assert(html.includes('title="Generated Art"'), 'iframe has title');
 assert(html.includes('id="art-frame"'), 'art-frame iframe exists');
-assert(html.includes('id="art-topics"'), 'art-topics span exists');
-assert(html.includes('id="art-budget"'), 'art-budget span exists');
+assert(html.includes('id="art-topics"'), 'art-topics element exists');
+assert(html.includes('id="art-budget"'), 'art-budget element exists');
 assert(html.includes('id="refresh-btn"'), 'refresh button exists');
-assert(html.includes('&#x21bb;') || html.includes('↻'), 'Refresh button has ↻ icon');
+assert(html.includes('&#x21bb;') || html.includes('\u21bb'), 'Refresh button has refresh icon');
 assert(html.includes('id="settings-link"'), 'settings link exists');
-assert(html.includes('&#x2699;') || html.includes('⚙'), 'Settings link has ⚙ icon');
+assert(html.includes('&#x2699;') || html.includes('\u2699'), 'Settings link has gear icon');
 assert(html.includes('chatgpt.com'), 'Empty state links to ChatGPT');
 assert(html.includes('claude.ai'), 'Empty state links to Claude');
 assert(html.includes('target="_blank"'), 'External links open in new tab');
@@ -46,6 +46,13 @@ assert(html.includes('id="sync-status"'), 'sync-status div exists');
 assert(html.includes('../shared/storage.js'), 'Loads storage.js');
 assert(html.includes('newtab.js'), 'Loads newtab.js');
 assert(html.includes('newtab.css'), 'Loads newtab.css');
+
+// Footer and info popup
+assert(html.includes('id="art-footer"'), 'Footer bar exists');
+assert(html.includes('id="info-trigger"'), 'Info trigger icon exists');
+assert(html.includes('id="info-popup"'), 'Info popup exists');
+assert(html.includes('id="footer-label"'), 'Footer label exists');
+assert(html.includes('Beauty on New Tabs'), 'Footer shows extension name');
 
 // --- CSS Tests ---
 console.log('\n--- newtab.css ---');
@@ -58,9 +65,14 @@ assert(css.includes('align-items: center') || css.includes('align-items:center')
 assert(css.includes('@keyframes spin'), 'Spinner animation defined');
 assert(css.includes('max-width'), 'Onboarding/empty have max-width');
 assert(css.includes('border: none') || css.includes('border:none'), 'iframe has no border');
-assert(css.includes('position: fixed') || css.includes('position:fixed'), 'Metadata bar uses fixed positioning');
+assert(css.includes('position: fixed') || css.includes('position:fixed'), 'Footer uses fixed positioning');
 assert(css.includes('cursor: pointer') || css.includes('cursor:pointer'), 'Interactive elements have pointer cursor');
 assert(css.includes('border-radius: 50%') || css.includes('border-radius:50%'), 'Refresh button is circular');
+assert(css.includes('opacity: 0'), 'Footer hidden by default');
+assert(css.includes('opacity: 1'), 'Footer visible on hover');
+assert(css.includes('#info-popup'), 'Info popup styled');
+assert(css.includes('display: none'), 'Info popup hidden by default');
+assert(css.includes('display: block'), 'Info popup shown on hover');
 
 // --- JS Tests ---
 console.log('\n--- newtab.js ---');
@@ -80,7 +92,8 @@ assert(js.includes('getConversations'), 'Checks conversations exist before trigg
 
 // displayArtifact
 assert(js.includes('function displayArtifact'), 'displayArtifact function defined');
-assert(js.includes('srcdoc'), 'Sets iframe srcdoc');
+assert(js.includes('postMessage'), 'Sends art HTML via postMessage to sandbox');
+assert(js.includes('sandbox.html'), 'Loads sandbox.html in iframe');
 assert(js.includes('.join'), 'Joins topics with separator');
 assert(js.includes('getGenerationStatus'), 'Shows budget status');
 
