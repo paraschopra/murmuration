@@ -86,6 +86,12 @@ Total tasks: 27
 - Failed generations don't consume budget, stats track success/failure
 - 15/15 automated tests pass (tests/test-background.js)
 
+### Task 14-15: Content scripts — chatgpt.js and claude.js (DONE)
+- ChatGPT: 3 fallback selectors, MutationObserver, 2s debounce
+- Claude: 3 fallback selectors + noise filtering, MutationObserver, 2s debounce
+- Both: IIFE wrapped, custom selector support, max 20 titles, dedup
+- 32/32 structural tests pass (tests/test-content-scripts.js)
+
 ## Next Steps
 
-Continue with Content Scripts: chatgpt.js and claude.js.
+Continue with New Tab Page: newtab/newtab.html, newtab.js, newtab.css.

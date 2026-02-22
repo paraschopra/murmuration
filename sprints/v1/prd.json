@@ -201,7 +201,7 @@
       "All console.log messages prefixed with 'Beauty on New Tabs:'",
       "Script runs at document_idle as specified in manifest"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Content Scripts",
@@ -215,7 +215,7 @@
       "All console.log messages prefixed with 'Beauty on New Tabs:'",
       "Script handles case where sidebar is collapsed or not visible (no errors thrown)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "New Tab Page",
