@@ -232,7 +232,7 @@
       "Script tags load ../shared/storage.js and newtab.js",
       "CSS is linked from newtab.css"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "New Tab Page",
@@ -248,7 +248,7 @@
       "Settings icon is fixed at bottom-right (offset from refresh) with hover state",
       "All interactive elements have cursor: pointer"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "New Tab Page",
@@ -262,7 +262,7 @@
       "If artifacts exist: calls displayArtifact to show a random one",
       "DOMContentLoaded event triggers init()"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "New Tab Page",
@@ -277,7 +277,7 @@
       "Refresh button does nothing when only 1 artifact exists",
       "Settings link calls chrome.runtime.openOptionsPage() on click"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "New Tab Page",
@@ -291,7 +291,7 @@
       "formatRelativeTime returns 'Xh ago' for timestamps under 24 hours ago",
       "formatRelativeTime returns 'Xd ago' for timestamps 24+ hours ago"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Options Page",

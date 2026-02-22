@@ -92,6 +92,14 @@ Total tasks: 27
 - Both: IIFE wrapped, custom selector support, max 20 titles, dedup
 - 32/32 structural tests pass (tests/test-content-scripts.js)
 
+### Task 16-20: New Tab Page — newtab.html, newtab.css, newtab.js (DONE)
+- 4 UI states: loading, onboarding, art display, empty
+- Full-viewport iframe with sandbox=allow-scripts for art display
+- Refresh button with non-repeating random selection
+- Budget status display, sync status with relative time
+- Auto-triggers generation from new tab if budget allows
+- 60/60 structural tests pass (tests/test-newtab.js)
+
 ## Next Steps
 
-Continue with New Tab Page: newtab/newtab.html, newtab.js, newtab.css.
+Continue with Options Page: options/options.html, options.js, options.css.

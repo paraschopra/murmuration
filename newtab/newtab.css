@@ -1,0 +1,146 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #fff;
+  color: #333;
+  overflow: hidden;
+}
+
+.state {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Loading */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #eee;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Onboarding & Empty */
+.onboarding-container,
+.empty-container {
+  text-align: center;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.onboarding-container h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.onboarding-container p,
+.empty-container p {
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.btn {
+  padding: 0.6rem 1.5rem;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #555;
+}
+
+/* Art display */
+#art-display {
+  position: relative;
+  flex-direction: column;
+}
+
+#art-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+
+#art-meta {
+  position: fixed;
+  bottom: 12px;
+  left: 16px;
+  font-size: 0.75rem;
+  color: #aaa;
+  display: flex;
+  gap: 1rem;
+}
+
+#refresh-btn {
+  position: fixed;
+  bottom: 12px;
+  right: 56px;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  color: #aaa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#refresh-btn:hover {
+  color: #333;
+  border-color: #999;
+}
+
+#settings-link {
+  position: fixed;
+  bottom: 12px;
+  right: 16px;
+  font-size: 1.2rem;
+  color: #aaa;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#settings-link:hover {
+  color: #333;
+}
+
+/* Empty state */
+.empty-container h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-container a {
+  color: #333;
+}
+
+#sync-status {
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 1rem;
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tab</title>
+  <link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+  <div id="loading-state" class="state">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="onboarding-state" class="state" style="display:none">
+    <div class="onboarding-container">
+      <h1>Beauty on New Tabs</h1>
+      <p>Generative art inspired by your AI conversations.</p>
+      <p>Set up your API key to get started.</p>
+      <button id="setup-btn" class="btn">Open Settings</button>
+    </div>
+  </div>
+
+  <div id="art-display" class="state" style="display:none">
+    <iframe id="art-frame" sandbox="allow-scripts" title="Generated Art"></iframe>
+    <div id="art-meta">
+      <span id="art-topics"></span>
+      <span id="art-budget"></span>
+    </div>
+    <button id="refresh-btn" class="icon-btn" title="Show another">&#x21bb;</button>
+    <a id="settings-link" href="#" title="Settings">&#x2699;</a>
+  </div>
+
+  <div id="empty-state" class="state" style="display:none">
+    <div class="empty-container">
+      <h2>No art yet</h2>
+      <p>Visit <a href="https://chatgpt.com" target="_blank">ChatGPT</a> or
+         <a href="https://claude.ai" target="_blank">Claude</a> to start generating.</p>
+      <div id="sync-status"></div>
+    </div>
+  </div>
+
+  <script src="../shared/storage.js"></script>
+  <script src="newtab.js"></script>
+</body>
+</html>
