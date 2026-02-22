@@ -226,7 +226,7 @@ RULES:
 - Must be a single HTML page with inline <style> and optional <script>.
 - NO external assets (no image URLs, no CDN links, no external scripts/fonts).
 - Colors: black, white, and grayscale ONLY.
-- Keep it concise — under 4000 tokens of HTML.
+- Keep it concise — under 8000 tokens of HTML.
 
 Topics: ${topics.join(', ')}`;
 }
@@ -280,7 +280,7 @@ async function generateArt(allTitles) {
 
   const prompt = buildArtPrompt(topics);
   const response = await client.generateCompletion(prompt, {
-    maxTokens: 4000,
+    maxTokens: 8000,
     temperature: 1.0
   });
 
@@ -1088,7 +1088,7 @@ No test framework in the original, and no build system to run one easily. Testin
 
 4. **Content script selectors break** — ChatGPT and Claude update their UIs frequently. The hardcoded CSS selectors may stop working. This is an inherited risk from the original architecture, mitigated by the fallback chain and custom selector support.
 
-5. **Token cost** — Generating full HTML pages uses more tokens than generating quotes (maxTokens capped at 4000). With default 3/day, this is ~12K output tokens/day. Reasonable but users should be aware of cost implications with expensive models.
+5. **Token cost** — Generating full HTML pages uses more tokens than generating quotes (maxTokens capped at 8000). Based on the example visual (~2,500-3,000 tokens for a rich multi-phase animated ASCII art piece), expect ~3K-6K tokens per generation. With default 3/day, this is ~9K-18K output tokens/day. Reasonable but users should be aware of cost implications with expensive models.
 
 ## Codex Review Notes
 
