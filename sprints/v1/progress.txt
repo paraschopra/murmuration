@@ -79,6 +79,13 @@ Total tasks: 27
 - generateArt: full pipeline from settings → API → artifact
 - 48/48 automated tests pass (tests/test-art-generator.js)
 
+### Task 11-13: background/background.js — service worker (DONE)
+- Message listener for CONVERSATION_SCRAPED and REQUEST_GENERATION
+- handleConversationScraped with 60s per-platform debounce
+- tryGenerate: budget check → gather titles → generate → save artifact
+- Failed generations don't consume budget, stats track success/failure
+- 15/15 automated tests pass (tests/test-background.js)
+
 ## Next Steps
 
-Continue with Background Worker: background/background.js.
+Continue with Content Scripts: chatgpt.js and claude.js.

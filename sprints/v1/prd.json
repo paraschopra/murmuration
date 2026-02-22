@@ -157,7 +157,7 @@
       "Listener returns true to indicate async response handling",
       "Service worker console shows no errors on extension load"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Background Worker",
@@ -170,7 +170,7 @@
       "Logs 'Debouncing scrape from {platform}' when debounced",
       "Logs 'Received scraped data from {platform}' when processing"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Background Worker",
@@ -184,7 +184,7 @@
       "Logs success message with artifact size in bytes",
       "Logs error message on failure with the error details"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "Content Scripts",
