@@ -14,9 +14,9 @@ The architecture follows the same proven pattern from quotes-on-newtabs: content
 
 1. **Store HTML as strings in chrome.storage.local** — Each artifact is a self-contained HTML string (typically 2-10KB). With a default budget of 3/day and keeping the last 20 artifacts, we stay well under chrome.storage.local's 10MB limit. No need for `unlimitedStorage` permission.
 
-2. **iframe for display** — The generated HTML runs in a sandboxed iframe using `srcdoc`. This provides isolation (no access to extension APIs or parent page) and is the safest way to run untrusted generated code. The iframe sandbox attribute strips dangerous capabilities.
+2. **iframe for display with injected CSP** — The generated HTML runs in a sandboxed iframe using `srcdoc`. This provides isolation (no access to extension APIs or parent page). Additionally, we inject a strict Content-Security-Policy `<meta>` tag into the generated HTML before loading it, preventing external network requests (no image loading, no fetch, no exfiltration). The CSP: `default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:;`.
 
-3. **Daily budget instead of hourly TTL** — Instead of the original's 1-hour cache timer, we track generations per calendar day. When a scrape triggers and the daily budget isn't exhausted, we generate a new artifact. This gives the user predictable cost control.
+3. **Daily budget instead of hourly TTL, with dual trigger** — Instead of the original's 1-hour cache timer, we track generations per calendar day. Generation triggers both on scrape events AND on new tab load (if budget remains and topics exist but no artifacts yet). This ensures art is generated even if the user doesn't visit ChatGPT/Claude frequently.
 
 4. **3 random topics per generation** — From the full scraped title list (up to 20), we randomly pick 3 for each generation call. This maximizes diversity across artifacts while keeping the prompt focused.
 
@@ -219,7 +219,14 @@ function pickRandomTopics(titles, count) {
 function buildArtPrompt(topics) {
   return `Based on given topics that user has been chatting about, create a self-contained html/css/js page that can be shown to the user in an iframe on a new tab to reflect her state of mind. Pick one topic or some common theme, don't mix everything.
 
-Create a minimal ascii or related art, html css based. e.g. Fractal, aquarium, scenery. Glitchy, whimsical, awe-inspiring. Black and white only. (White background preferred). Animated. Be creative. Reflect state of user's mind. Pick odd ones, surprise the user. Don't be boring. Output only self-contained html, nothing else.
+Create a minimal ascii or related art, html css based. e.g. Fractal, aquarium, scenery. Glitchy, whimsical, awe-inspiring. Black and white only. (White background preferred). Animated. Be creative. Reflect state of user's mind. Pick odd ones, surprise the user. Don't be boring.
+
+RULES:
+- Output ONLY the self-contained HTML. No explanation, no markdown.
+- Must be a single HTML page with inline <style> and optional <script>.
+- NO external assets (no image URLs, no CDN links, no external scripts/fonts).
+- Colors: black, white, and grayscale ONLY.
+- Keep it concise — under 4000 tokens of HTML.
 
 Topics: ${topics.join(', ')}`;
 }
@@ -234,9 +241,25 @@ function parseArtResponse(responseContent) {
     html = codeBlockMatch[1].trim();
   }
 
-  // Basic validation: must contain <html or <!DOCTYPE or at minimum a <style or <canvas tag
-  if (!html.includes('<') || html.length < 50) {
+  // Validate: must contain meaningful HTML tags
+  const hasHtmlTag = /<(?:html|style|canvas|svg|body|div)/i.test(html);
+  if (!hasHtmlTag || html.length < 50) {
     throw new Error('Response does not appear to contain valid HTML');
+  }
+
+  // Size guard: reject if over 500KB
+  if (html.length > 500000) {
+    throw new Error('Generated HTML exceeds 500KB size limit');
+  }
+
+  // Inject strict CSP meta tag to block external requests
+  const cspMeta = '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'; img-src data:;">';
+  if (html.includes('<head>')) {
+    html = html.replace('<head>', '<head>' + cspMeta);
+  } else if (html.includes('<html>')) {
+    html = html.replace('<html>', '<html><head>' + cspMeta + '</head>');
+  } else {
+    html = cspMeta + html;
   }
 
   return html;
@@ -257,7 +280,7 @@ async function generateArt(allTitles) {
 
   const prompt = buildArtPrompt(topics);
   const response = await client.generateCompletion(prompt, {
-    maxTokens: 16000,
+    maxTokens: 4000,
     temperature: 1.0
   });
 
@@ -290,16 +313,34 @@ Adapted orchestration: scrape → check daily budget → generate art → save a
 ```javascript
 importScripts('/shared/storage.js', '/shared/api-client.js', '/shared/art-generator.js');
 
+// Debounce: ignore scrapes within 60s per platform
+const lastScrapeTime = {};
+const SCRAPE_DEBOUNCE_MS = 60000;
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'CONVERSATION_SCRAPED') {
     handleConversationScraped(message.data).catch(err => {
       console.error('Beauty on New Tabs: Error handling scraped conversation:', err);
     });
   }
+  if (message.type === 'REQUEST_GENERATION') {
+    // Triggered from new tab page when budget remains but no artifacts exist
+    handleGenerationRequest().catch(err => {
+      console.error('Beauty on New Tabs: Error handling generation request:', err);
+    });
+  }
   return true;
 });
 
 async function handleConversationScraped(data) {
+  // Debounce: skip if same platform scraped within 60s
+  const now = Date.now();
+  if (lastScrapeTime[data.platform] && (now - lastScrapeTime[data.platform]) < SCRAPE_DEBOUNCE_MS) {
+    console.log('Beauty on New Tabs: Debouncing scrape from', data.platform);
+    return;
+  }
+  lastScrapeTime[data.platform] = now;
+
   console.log('Beauty on New Tabs: Received scraped data from', data.platform);
 
   // Save conversation
@@ -314,6 +355,14 @@ async function handleConversationScraped(data) {
   await saveConversation(conversation);
   await updateLastSynced(data.platform);
 
+  await tryGenerate();
+}
+
+async function handleGenerationRequest() {
+  await tryGenerate();
+}
+
+async function tryGenerate() {
   // Check if we should generate
   const canGenerate = await shouldGenerate();
   if (!canGenerate) {
@@ -437,6 +486,12 @@ async function init() {
   // Check for artifacts
   const artifacts = await getArtifacts();
   if (!artifacts || artifacts.length === 0) {
+    // Fallback: try to trigger generation from new tab if budget allows
+    const canGenerate = await shouldGenerate();
+    const conversations = await getConversations();
+    if (canGenerate && conversations.length > 0) {
+      chrome.runtime.sendMessage({ type: 'REQUEST_GENERATION' });
+    }
     showState('empty-state');
     await showSyncStatus();
     return;
@@ -447,13 +502,17 @@ async function init() {
 }
 
 function displayArtifact(artifacts) {
-  const artifact = artifacts[Math.floor(Math.random() * artifacts.length)];
+  let currentIndex = Math.floor(Math.random() * artifacts.length);
   const frame = document.getElementById('art-frame');
-  frame.srcdoc = artifact.html;
-
-  // Show topics
   const topicsEl = document.getElementById('art-topics');
-  topicsEl.textContent = artifact.topics.join(' · ');
+
+  function showArtifact(index) {
+    const artifact = artifacts[index];
+    frame.srcdoc = artifact.html;
+    topicsEl.textContent = artifact.topics.join(' · ');
+  }
+
+  showArtifact(currentIndex);
 
   // Show budget status
   getGenerationStatus().then(status => {
@@ -463,11 +522,15 @@ function displayArtifact(artifacts) {
 
   showState('art-display');
 
-  // Refresh button: pick another random artifact
+  // Refresh button: pick a DIFFERENT random artifact (avoid repeats)
   document.getElementById('refresh-btn').addEventListener('click', () => {
-    const other = artifacts[Math.floor(Math.random() * artifacts.length)];
-    frame.srcdoc = other.html;
-    topicsEl.textContent = other.topics.join(' · ');
+    if (artifacts.length <= 1) return;
+    let nextIndex;
+    do {
+      nextIndex = Math.floor(Math.random() * artifacts.length);
+    } while (nextIndex === currentIndex);
+    currentIndex = nextIndex;
+    showArtifact(currentIndex);
   });
 
   // Settings link
@@ -981,7 +1044,7 @@ Placeholder icons needed at `icons/icon16.png`, `icons/icon48.png`, `icons/icon1
 
 3. **All artifacts displayed are the same** — The refresh button picks randomly, which could repeat. Track the current index and exclude it from the next pick.
 
-4. **iframe content tries to escape sandbox** — The `sandbox="allow-scripts"` attribute blocks navigation, forms, popups, and top-level navigation. Only scripts run. The `srcdoc` approach means no network requests from the iframe (no `allow-same-origin`).
+4. **iframe content tries to escape sandbox** — The `sandbox="allow-scripts"` attribute blocks navigation, forms, popups, and top-level navigation. Only scripts run. Additionally, a strict CSP `<meta>` tag is injected into the HTML before loading, blocking all external network requests (images, scripts, fetch). The `srcdoc` approach without `allow-same-origin` provides a second layer of isolation.
 
 5. **Daily budget resets at midnight local time** — `getTodayKey()` uses local date. If the user travels across time zones, the budget may reset early or late. This is acceptable for v1.
 
@@ -1025,4 +1088,16 @@ No test framework in the original, and no build system to run one easily. Testin
 
 4. **Content script selectors break** — ChatGPT and Claude update their UIs frequently. The hardcoded CSS selectors may stop working. This is an inherited risk from the original architecture, mitigated by the fallback chain and custom selector support.
 
-5. **Token cost** — Generating full HTML pages uses more tokens than generating quotes (the prompt asks for maxTokens: 16000). With default 3/day, this is ~48K output tokens/day. Users should be aware of cost implications, especially with expensive models.
+5. **Token cost** — Generating full HTML pages uses more tokens than generating quotes (maxTokens capped at 4000). With default 3/day, this is ~12K output tokens/day. Reasonable but users should be aware of cost implications with expensive models.
+
+## Codex Review Notes
+
+This plan was reviewed by OpenAI Codex. Key improvements incorporated from the review:
+- **CSP injection**: Strict Content-Security-Policy meta tag injected into generated HTML to block external network requests and data exfiltration
+- **Scrape debounce**: 60-second debounce per platform in background worker to prevent rapid-fire generation from SPA navigation
+- **Fallback generation trigger**: New tab page sends `REQUEST_GENERATION` message to background worker if budget remains but no artifacts exist
+- **Lower maxTokens**: Reduced from 16000 to 4000 to control cost and output size
+- **Size guard**: Hard 500KB limit on generated HTML with validation
+- **Stronger prompt guardrails**: Explicit rules for no external assets, no color, concise output
+- **Non-repeating refresh**: Refresh button tracks current index and picks a different artifact
+- **Stricter HTML validation**: Regex check for actual HTML tags instead of just checking for `<`
