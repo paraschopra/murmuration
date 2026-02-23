@@ -31,8 +31,20 @@ async function init() {
   displayArtifact(artifacts);
 }
 
+// Pick an index biased towards recent artifacts (index 0 = newest).
+// Each index i has weight decay^i, so newer items are more likely.
+function weightedRandomIndex(length) {
+  const decay = 0.95;
+  let r = Math.random() * (1 - Math.pow(decay, length)) / (1 - decay);
+  for (let i = 0; i < length; i++) {
+    r -= Math.pow(decay, i);
+    if (r <= 0) return i;
+  }
+  return length - 1;
+}
+
 function displayArtifact(artifacts) {
-  let currentIndex = Math.floor(Math.random() * artifacts.length);
+  let currentIndex = weightedRandomIndex(artifacts.length);
   const frame = document.getElementById('art-frame');
   const topicsEl = document.getElementById('art-topics');
   const budgetEl = document.getElementById('art-budget');

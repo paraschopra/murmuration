@@ -2,7 +2,7 @@
   'use strict';
 
   const PLATFORM = 'claude';
-  const LOG_PREFIX = 'Beauty on New Tabs:';
+  const LOG_PREFIX = 'Murmuration:';
   const SCRAPE_DELAY_MS = 3000;
   const OBSERVER_DEBOUNCE_MS = 2000;
   const MAX_TITLES = 20;

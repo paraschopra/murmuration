@@ -7,12 +7,12 @@ const SCRAPE_DEBOUNCE_MS = 60000;
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'CONVERSATION_SCRAPED') {
     handleConversationScraped(message.data).catch(err => {
-      console.error('Beauty on New Tabs: Error handling scraped conversation:', err);
+      console.error('Murmuration: Error handling scraped conversation:', err);
     });
   }
   if (message.type === 'REQUEST_GENERATION') {
     handleGenerationRequest().catch(err => {
-      console.error('Beauty on New Tabs: Error handling generation request:', err);
+      console.error('Murmuration: Error handling generation request:', err);
     });
   }
   return true;
@@ -21,12 +21,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleConversationScraped(data) {
   const now = Date.now();
   if (lastScrapeTime[data.platform] && (now - lastScrapeTime[data.platform]) < SCRAPE_DEBOUNCE_MS) {
-    console.log('Beauty on New Tabs: Debouncing scrape from', data.platform);
+    console.log('Murmuration: Debouncing scrape from', data.platform);
     return;
   }
   lastScrapeTime[data.platform] = now;
 
-  console.log('Beauty on New Tabs: Received scraped data from', data.platform);
+  console.log('Murmuration: Received scraped data from', data.platform);
 
   const conversation = {
     id: `${data.platform}-${data.url}`,
@@ -49,7 +49,7 @@ async function handleGenerationRequest() {
 async function tryGenerate() {
   const canGenerate = await shouldGenerate();
   if (!canGenerate) {
-    console.log('Beauty on New Tabs: Daily budget exhausted, skipping generation');
+    console.log('Murmuration: Daily budget exhausted, skipping generation');
     return;
   }
 
@@ -62,10 +62,10 @@ async function tryGenerate() {
   }
   const uniqueTitles = [...new Set(allTitles)];
 
-  console.log('Beauty on New Tabs: Total unique topics available:', uniqueTitles.length, '— will pick 3');
+  console.log('Murmuration: Total unique topics available:', uniqueTitles.length, '— will pick 3');
 
   if (uniqueTitles.length === 0) {
-    console.log('Beauty on New Tabs: No titles available for generation');
+    console.log('Murmuration: No titles available for generation');
     return;
   }
 
@@ -77,9 +77,9 @@ async function tryGenerate() {
     if (artifact.usage) {
       await recordTokenUsage(artifact.usage);
     }
-    console.log('Beauty on New Tabs: Artifact saved successfully, size:', artifact.html.length, 'bytes');
+    console.log('Murmuration: Artifact saved successfully, size:', artifact.html.length, 'bytes');
   } catch (err) {
     await recordGenerationResult(false);
-    console.error('Beauty on New Tabs: Art generation failed:', err);
+    console.error('Murmuration: Art generation failed:', err);
   }
 }

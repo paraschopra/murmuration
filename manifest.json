@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Beauty on New Tabs",
+  "name": "Murmuration",
   "version": "1.0.0",
   "description": "Generative art on every new tab, inspired by your AI conversations",
   "permissions": ["storage", "activeTab", "tabs", "scripting"],

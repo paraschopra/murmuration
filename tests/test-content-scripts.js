@@ -52,7 +52,7 @@ function testScript(filename, platform, expectedSelectors) {
     'Has debounce mechanism');
 
   // Log prefix
-  assert(content.includes('Beauty on New Tabs:'), 'Log messages use correct prefix');
+  assert(content.includes('Murmuration:'), 'Log messages use correct prefix');
 
   // IIFE wrapper (no global pollution)
   assert(content.includes('(function()') || content.includes('(() =>'), 'Wrapped in IIFE');

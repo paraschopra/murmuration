@@ -23,8 +23,8 @@ function assert(condition, message) {
 console.log('\n--- options.html ---');
 const html = fs.readFileSync(path.join(__dirname, '..', 'options', 'options.html'), 'utf-8');
 
-assert(html.includes('Beauty on New Tabs'), 'Page title contains extension name');
-assert(html.includes('<title>Beauty on New Tabs'), 'HTML title tag set');
+assert(html.includes('Murmuration'), 'Page title contains extension name');
+assert(html.includes('<title>Murmuration'), 'HTML title tag set');
 assert(html.includes('id="apiKey"'), 'API key input exists');
 assert(html.includes('type="password"'), 'API key input is password type');
 assert(html.includes('id="model"'), 'Model input exists');

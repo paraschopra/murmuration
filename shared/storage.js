@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
 };
 
 const MAX_CONVERSATIONS = 100;
-const MAX_ARTIFACTS = 20;
+const MAX_ARTIFACTS = 100;
 const DEFAULT_DAILY_BUDGET = 3;
 
 // --- Conversation storage ---
@@ -52,12 +52,12 @@ async function saveArtifact(artifact) {
     await chrome.storage.local.set({ [STORAGE_KEYS.ARTIFACTS]: artifacts });
   } catch (err) {
     if (err && err.message && err.message.includes('QUOTA_BYTES')) {
-      console.warn('Beauty on New Tabs: Quota exceeded, removing oldest artifacts and retrying');
+      console.warn('Murmuration: Quota exceeded, removing oldest artifacts and retrying');
       artifacts = artifacts.slice(0, Math.max(1, artifacts.length - 5));
       try {
         await chrome.storage.local.set({ [STORAGE_KEYS.ARTIFACTS]: artifacts });
       } catch (retryErr) {
-        console.error('Beauty on New Tabs: Retry after quota cleanup also failed:', retryErr);
+        console.error('Murmuration: Retry after quota cleanup also failed:', retryErr);
       }
     } else {
       throw err;

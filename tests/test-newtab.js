@@ -54,7 +54,7 @@ assert(html.includes('id="art-footer"'), 'Footer bar exists');
 assert(html.includes('id="info-trigger"'), 'Info trigger icon exists');
 assert(html.includes('id="info-popup"'), 'Info popup exists');
 assert(html.includes('id="footer-label"'), 'Footer label exists');
-assert(html.includes('Beauty on New Tabs'), 'Footer shows extension name');
+assert(html.includes('Murmuration'), 'Footer shows extension name');
 
 // --- CSS Tests ---
 console.log('\n--- newtab.css ---');

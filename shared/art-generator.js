@@ -63,7 +63,7 @@ function parseArtResponse(responseContent) {
 }
 
 async function generateArt(allTitles) {
-  console.log('Beauty on New Tabs: Starting art generation');
+  console.log('Murmuration: Starting art generation');
 
   const settings = await chrome.storage.sync.get(['apiKey', 'model']);
   if (!settings.apiKey) {
@@ -73,7 +73,7 @@ async function generateArt(allTitles) {
   const client = getApiClient(settings.apiKey, settings.model);
   const topics = pickRandomTopics(allTitles, TOPICS_PER_GENERATION);
 
-  console.log('Beauty on New Tabs: Generating art for topics:', topics);
+  console.log('Murmuration: Generating art for topics:', topics);
 
   const prompt = buildArtPrompt(topics);
   const response = await client.generateCompletion(prompt, {
@@ -91,7 +91,7 @@ async function generateArt(allTitles) {
     usage: response.usage
   };
 
-  console.log('Beauty on New Tabs: Art generated successfully, size:', html.length, 'bytes, tokens:', response.usage.totalTokens);
+  console.log('Murmuration: Art generated successfully, size:', html.length, 'bytes, tokens:', response.usage.totalTokens);
   return artifact;
 }
 

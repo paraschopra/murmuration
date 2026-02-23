@@ -1,17 +1,21 @@
-# Beauty on New Tabs
+# Murmuration
 
-A Chrome extension that generates beautiful, animated black-and-white generative art on every new tab, inspired by your AI conversations on ChatGPT and Claude.
+Your AI conversations, taking flight as generative art.
+
+A Chrome extension that transforms your ChatGPT and Claude conversation topics into beautiful, animated black-and-white visualizations on every new tab — like starlings moving as one across the sky, individual fragments coalescing into something transcendent.
+
+![Murmuration preview](murmuration.gif)
 
 ## How It Works
 
 1. **Scrapes** conversation titles from ChatGPT and Claude sidebars via content scripts
 2. **Generates** self-contained HTML/CSS/JS art pieces via OpenRouter LLM API
-3. **Displays** art in a sandboxed iframe on every new tab
+3. **Displays** art in a sandboxed iframe on every new tab, biased towards recent pieces (exponential decay with factor 0.95). The refresh button picks uniformly at random from all stored art. Up to 100 artifacts are kept.
 
 ## Project Structure
 
 ```
-beauty-on-new-tabs/
+murmuration/
 ├── manifest.json              # Chrome MV3 extension manifest
 ├── background/
 │   └── background.js          # Service worker: orchestrates scraping → generation → storage
@@ -36,7 +40,7 @@ beauty-on-new-tabs/
 │   └── icon128.png            # Extension icon (128x128)
 ├── scripts/
 │   └── generate-icons.js      # Icon generation script (Node.js, no deps)
-├── tests/                     # Automated tests (321 total, Node.js)
+├── tests/                     # Automated tests (Node.js)
 │   ├── test-manifest.js       # Manifest and directory structure validation
 │   ├── test-storage.js        # Storage functions with mock chrome.storage
 │   ├── test-api-client.js     # API client with mock fetch
@@ -47,12 +51,6 @@ beauty-on-new-tabs/
 │   └── test-options.js        # Options page structure
 └── sprints/
     └── v1/                    # Sprint 1 planning artifacts
-        ├── prd.json           # Product requirements (27 tasks)
-        ├── progress.txt       # Implementation log
-        ├── plan.md            # Architecture plan
-        ├── research.md        # Codebase research
-        ├── change-required.md # User requirements
-        └── example-visual.html# Example art output
 ```
 
 ## Setup
@@ -95,3 +93,7 @@ Using Claude Sonnet 4.6 (`anthropic/claude-sonnet-4-6`) via OpenRouter at $3/M i
 | 5 generations | ~23,000 | ~$0.30 | ~$8.90 |
 
 Each generation uses ~800 prompt tokens and ~3,800 completion tokens. Token usage is tracked in the extension settings page.
+
+## Built By
+
+Created by [Paras Chopra](https://invertedpassion.com) and [Claude](https://claude.ai) (Anthropic's Opus 4.6).

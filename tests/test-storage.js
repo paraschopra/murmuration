@@ -162,14 +162,14 @@ async function testArtifactStorage() {
   assert(arts.length === 2, 'Two artifacts stored');
   assert(arts[0].id === 'art-2', 'New artifact prepended');
 
-  // Trims to MAX_ARTIFACTS (20)
+  // Trims to MAX_ARTIFACTS (100)
   resetStore();
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 105; i++) {
     await saveArtifact({ id: `art-${i}`, html: `<h1>${i}</h1>`, topics: ['x'], timestamp: i });
   }
   arts = await getArtifacts();
-  assert(arts.length === 20, 'Trims to MAX_ARTIFACTS (20)');
-  assert(arts[0].id === 'art-24', 'Most recent is first');
+  assert(arts.length === 100, 'Trims to MAX_ARTIFACTS (100)');
+  assert(arts[0].id === 'art-104', 'Most recent is first');
 
   // Quota error handling: removes oldest and retries
   resetStore();
