@@ -4,13 +4,15 @@ Your AI conversations, taking flight as generative art.
 
 A Chrome extension that transforms your ChatGPT and Claude conversation topics into beautiful, animated black-and-white visualizations on every new tab — like starlings moving as one across the sky, individual fragments coalescing into something transcendent.
 
-![Murmuration preview](murmuration.gif)
+![Murmuration preview](murmuration-1.gif)
 
 ## How It Works
 
 1. **Scrapes** conversation titles from ChatGPT and Claude sidebars via content scripts
 2. **Generates** self-contained HTML/CSS/JS art pieces via OpenRouter LLM API
 3. **Displays** art in a sandboxed iframe on every new tab, biased towards recent pieces (exponential decay with factor 0.95). The refresh button picks uniformly at random from all stored art. Up to 100 artifacts are kept.
+
+![Murmuration preview](murmuration.gif)
 
 ## Project Structure
 
