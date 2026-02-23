@@ -97,3 +97,5 @@ Each generation uses ~800 prompt tokens and ~3,800 completion tokens. Token usag
 ## Built By
 
 Created by [Paras Chopra](https://invertedpassion.com) and [Claude](https://claude.ai) (Anthropic's Opus 4.6).
+
+*PS: The project was named by Claude itself!*
