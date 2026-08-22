@@ -95,6 +95,8 @@ Hover over the footer of an art tab and use the hollow-square button to stop the
 
 The `No art yet` screen also provides visible Settings and Blank Page buttons. After purging, Settings reports whether fresh art was generated or why generation could not start.
 
+For upgrades from older purge behavior, a new tab automatically repairs the stale combination of zero cached art and an exhausted daily count. This recovery requires synced titles, runs at most once per calendar day, and never resets the limit while cached art exists.
+
 ## Estimated Cost
 
 Using Claude Sonnet 4.6 (`anthropic/claude-sonnet-4-6`) via OpenRouter at $3/M input, $15/M output tokens:

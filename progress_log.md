@@ -92,3 +92,15 @@
 - Recovery preserves older generation history, never runs when cached art exists, and requires usable synced titles before changing the allowance.
 - Verified storage behavior with 86 passing assertions, new-tab integration with 94 passing assertions, and `git diff --check`.
 - Next: checkpoint the recovery, update documentation, and run the full regression suite.
+
+## 2026-08-22T10:52:53+05:30
+
+- Committed automatic stale-cache recovery as `2abf7db` (`Recover stale empty art caches automatically`).
+- Documented the upgrade recovery conditions and safety limits.
+- Next: run all automated tests and complete the final review.
+
+## 2026-08-22T10:53:06+05:30
+
+- Full regression suite passed: 442 assertions across all nine test files, with zero failures.
+- Final diff review and `git diff --check` passed.
+- Status: permanent stale-cache recovery is complete. Reload the extension and open a new tab to exercise the repair against the existing `3 / 3`, zero-art state.
