@@ -62,7 +62,7 @@ async function tryGenerate() {
   }
   const uniqueTitles = [...new Set(allTitles)];
 
-  console.log('Murmuration: Total unique topics available:', uniqueTitles.length, '— will pick 3');
+  console.log('Murmuration: Total unique topics available:', uniqueTitles.length);
 
   if (uniqueTitles.length === 0) {
     console.log('Murmuration: No titles available for generation');

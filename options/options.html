@@ -23,7 +23,18 @@
       <input type="number" id="dailyBudget" min="1" max="20" value="3">
       <p class="hint">How many art pieces to generate per day (each uses one API call)</p>
 
-      <button id="save-btn" class="btn">Save Settings</button>
+      <label for="topicCount">Chat titles per generation</label>
+      <input type="number" id="topicCount" min="1" max="20" value="3">
+      <p class="hint">How many randomly selected chat titles are supplied to each art prompt</p>
+
+      <label for="artPrompt">Art prompt</label>
+      <textarea id="artPrompt" rows="16" spellcheck="false"></textarea>
+      <p class="hint">Use <code>{{topics}}</code> where the selected chat titles should appear.</p>
+
+      <div class="button-row">
+        <button id="save-btn" class="btn">Save Settings</button>
+        <button id="reset-prompt-btn" class="btn btn-secondary">Reset Prompt</button>
+      </div>
       <div id="save-status" class="status"></div>
     </section>
 
@@ -61,6 +72,7 @@
   </div>
 
   <script src="../shared/storage.js"></script>
+  <script src="../shared/art-generator.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

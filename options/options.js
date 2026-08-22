@@ -1,12 +1,18 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // Load saved settings
-  const settings = await chrome.storage.sync.get(['apiKey', 'model', 'dailyBudget']);
+  const settings = await chrome.storage.sync.get(['apiKey', 'model', 'dailyBudget', 'topicCount', 'artPrompt']);
   if (settings.apiKey) document.getElementById('apiKey').value = settings.apiKey;
   if (settings.model) document.getElementById('model').value = settings.model;
   document.getElementById('dailyBudget').value = settings.dailyBudget || 3;
+  document.getElementById('topicCount').value = normalizeTopicCount(settings.topicCount);
+  document.getElementById('artPrompt').value = settings.artPrompt || DEFAULT_ART_PROMPT;
 
   // Save settings
   document.getElementById('save-btn').addEventListener('click', saveSettings);
+  document.getElementById('reset-prompt-btn').addEventListener('click', () => {
+    document.getElementById('artPrompt').value = DEFAULT_ART_PROMPT;
+    showSaveStatus('Default prompt restored. Save to apply it.');
+  });
 
   // Load generation status and stats
   await loadStatus();
@@ -30,7 +36,9 @@ async function saveSettings() {
   const settings = {
     apiKey: document.getElementById('apiKey').value,
     model: document.getElementById('model').value || undefined,
-    dailyBudget: parseInt(document.getElementById('dailyBudget').value) || 3
+    dailyBudget: parseInt(document.getElementById('dailyBudget').value, 10) || 3,
+    topicCount: normalizeTopicCount(document.getElementById('topicCount').value),
+    artPrompt: document.getElementById('artPrompt').value.trim() || DEFAULT_ART_PROMPT
   };
 
   // Don't store undefined model
@@ -38,9 +46,13 @@ async function saveSettings() {
 
   await chrome.storage.sync.set(settings);
 
+  showSaveStatus('Saved');
+}
+
+function showSaveStatus(message) {
   const statusEl = document.getElementById('save-status');
-  statusEl.textContent = 'Saved';
-  setTimeout(() => statusEl.textContent = '', 2000);
+  statusEl.textContent = message;
+  setTimeout(() => statusEl.textContent = '', 2500);
 }
 
 async function loadStatus() {

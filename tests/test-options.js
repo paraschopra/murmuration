@@ -33,6 +33,10 @@ assert(html.includes('type="number"'), 'Budget is number input');
 assert(html.includes('min="1"'), 'Budget min is 1');
 assert(html.includes('max="20"'), 'Budget max is 20');
 assert(html.includes('value="3"'), 'Budget default is 3');
+assert(html.includes('id="topicCount"'), 'Chat title count input exists');
+assert(html.includes('id="artPrompt"'), 'Editable art prompt exists');
+assert(html.includes('{{topics}}'), 'Prompt placeholder is explained');
+assert(html.includes('id="reset-prompt-btn"'), 'Reset prompt button exists');
 assert(html.includes('id="save-btn"'), 'Save button exists');
 assert(html.includes('id="save-status"'), 'Save status area exists');
 assert(html.includes('id="gen-status"'), 'Generation status display exists');
@@ -44,6 +48,7 @@ assert(html.includes('id="primary-selector"'), 'Primary selector input exists');
 assert(html.includes('id="fallback-selectors"'), 'Fallback selectors textarea exists');
 assert(html.includes('id="save-selectors-btn"'), 'Save selectors button exists');
 assert(html.includes('../shared/storage.js'), 'Loads storage.js');
+assert(html.includes('../shared/art-generator.js'), 'Loads default prompt and topic settings');
 assert(html.includes('options.js'), 'Loads options.js');
 assert(html.includes('options.css'), 'Loads options.css');
 
@@ -73,6 +78,9 @@ assert(js.includes('DOMContentLoaded'), 'Waits for DOMContentLoaded');
 assert(js.includes("chrome.storage.sync.get") && js.includes("'apiKey'"), 'Loads apiKey from storage');
 assert(js.includes("'model'"), 'Loads model from storage');
 assert(js.includes("'dailyBudget'"), 'Loads dailyBudget from storage');
+assert(js.includes("'topicCount'"), 'Loads topicCount from storage');
+assert(js.includes("'artPrompt'"), 'Loads artPrompt from storage');
+assert(js.includes('DEFAULT_ART_PROMPT'), 'Uses the current prompt as the editable default');
 
 // Settings save
 assert(js.includes('async function saveSettings') || js.includes('function saveSettings'), 'saveSettings defined');
@@ -80,6 +88,8 @@ assert(js.includes('chrome.storage.sync.set'), 'Saves to chrome.storage.sync');
 assert(js.includes("'Saved'") || js.includes('"Saved"'), 'Shows Saved status');
 assert(js.includes('setTimeout'), 'Auto-clears status after timeout');
 assert(js.includes('parseInt'), 'Parses daily budget as integer');
+assert(js.includes('normalizeTopicCount'), 'Validates configurable chat title count');
+assert(js.includes('reset-prompt-btn'), 'Reset prompt control is wired up');
 
 // Generation stats
 assert(js.includes('getGenerationStatus'), 'Calls getGenerationStatus');

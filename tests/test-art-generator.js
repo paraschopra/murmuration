@@ -26,7 +26,11 @@ globalThis.chrome = {
 
 // Mock fetch for generateArt tests
 let fetchResponse = null;
-globalThis.fetch = async () => fetchResponse;
+let lastRequestBody = null;
+globalThis.fetch = async (url, options) => {
+  lastRequestBody = JSON.parse(options.body);
+  return fetchResponse;
+};
 
 // Load modules
 const apiModule = require('../shared/api-client.js');
@@ -54,6 +58,7 @@ function testPickRandomTopics() {
 
   // TOPICS_PER_GENERATION constant
   assert(TOPICS_PER_GENERATION === 3, 'TOPICS_PER_GENERATION is 3');
+  assert(DEFAULT_TOPIC_COUNT === 3, 'Default configurable topic count is 3');
 
   // Returns correct count
   const result = pickRandomTopics(['a', 'b', 'c', 'd', 'e'], 3);
@@ -88,6 +93,15 @@ function testPickRandomTopics() {
   assert(orderings.size >= 2, 'Results are randomized across calls');
 }
 
+function testNormalizeTopicCount() {
+  console.log('\n--- normalizeTopicCount ---');
+
+  assert(normalizeTopicCount(undefined) === 3, 'Missing topic count uses default');
+  assert(normalizeTopicCount('6') === 6, 'String topic count is parsed');
+  assert(normalizeTopicCount(0) === 1, 'Topic count is clamped to minimum');
+  assert(normalizeTopicCount(99) === 20, 'Topic count is clamped to maximum');
+}
+
 // --- buildArtPrompt tests ---
 
 function testBuildArtPrompt() {
@@ -108,6 +122,13 @@ function testBuildArtPrompt() {
   assert(prompt.includes('machine learning') && prompt.includes('philosophy') && prompt.includes('cooking'), 'Topics included as comma-separated');
   assert(prompt.includes('one topic') || prompt.includes('Pick one') || prompt.includes('common theme'), 'Prompt says pick one topic or theme');
   assert(prompt.includes('state of mind') || prompt.includes('reflect'), 'Prompt mentions reflecting user state');
+
+  const custom = buildArtPrompt(['alpha', 'beta'], 'Make something about {{ topics }}. Topics again: {{topics}}.');
+  assert(custom === 'Make something about alpha, beta. Topics again: alpha, beta.',
+    'Custom prompt replaces every topics placeholder');
+
+  const exact = buildArtPrompt(['unused'], 'Send this exact custom prompt');
+  assert(exact === 'Send this exact custom prompt', 'Custom prompt without placeholder remains unchanged');
 }
 
 // --- parseArtResponse tests ---
@@ -221,6 +242,14 @@ async function testGenerateArt() {
   assert(artifact.html.includes('Content-Security-Policy'), 'HTML has CSP injected');
   assert(artifact.usage !== undefined, 'Artifact includes usage data');
   assert(artifact.usage.totalTokens === 2000, 'Artifact usage has correct totalTokens');
+
+  // Configurable title count and prompt
+  store.sync.topicCount = 2;
+  store.sync.artPrompt = 'Custom experiment using: {{topics}}';
+  const customArtifact = await generateArt(['one', 'two', 'three', 'four']);
+  assert(customArtifact.topics.length === 2, 'Configured topic count controls selected titles');
+  assert(lastRequestBody.messages[0].content === `Custom experiment using: ${customArtifact.topics.join(', ')}`,
+    'Configured prompt is sent with selected titles substituted');
 }
 
 // --- Module exports ---
@@ -231,6 +260,9 @@ function testExports() {
   assert(typeof buildArtPrompt === 'function', 'buildArtPrompt exported');
   assert(typeof parseArtResponse === 'function', 'parseArtResponse exported');
   assert(typeof generateArt === 'function', 'generateArt exported');
+  assert(typeof normalizeTopicCount === 'function', 'normalizeTopicCount exported');
+  assert(typeof DEFAULT_ART_PROMPT === 'string' && DEFAULT_ART_PROMPT.includes('{{topics}}'),
+    'Editable default prompt is exported with topics placeholder');
   assert(typeof TOPICS_PER_GENERATION === 'number', 'TOPICS_PER_GENERATION exported');
 }
 
@@ -238,6 +270,7 @@ function testExports() {
 (async () => {
   try {
     testPickRandomTopics();
+    testNormalizeTopicCount();
     testBuildArtPrompt();
     testParseArtResponse();
     await testGenerateArt();
