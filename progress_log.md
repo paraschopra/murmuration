@@ -73,3 +73,10 @@
 - Full regression suite passed: 431 assertions across all nine test files, with zero failures.
 - Final diff review and `git diff --check` passed.
 - Status: follow-up is complete. Reload the unpacked extension before browser-testing purge regeneration and the no-art controls.
+
+## 2026-08-22T10:47:15+05:30
+
+- Diagnosed the reported `3 / 3` plus `0 art pieces cached` state as a persisted-state edge case: artifacts were purged under the previously loaded code, while today's generation log remained exhausted.
+- Confirmed extension reloads and model changes do not reset the local generation log or trigger an API request. The new-tab guard requires `todayCount < dailyBudget`, so `3 / 3` correctly blocks generation.
+- Confirmed the newer purge/reset path only runs on a new purge with at least one artifact; with zero cached artifacts its button is disabled, so it cannot repair this already-existing state.
+- No application code changed during this diagnostic. Immediate recovery: temporarily set the daily generation limit to 4, save, and open a new tab; with synced titles present this permits one fresh generation using the newly selected model.

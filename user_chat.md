@@ -7,3 +7,12 @@ i want to add two features: a) a simple, small button somewhere to show a blank 
 ## 2026-08-22T10:40:42+05:30
 
 i think after purging, cache should be reset. i purged but i am not sure new are getting generated. (also show settings and blank page button on the screen that says "no art yet")
+
+## 2026-08-22T10:47:15+05:30
+
+i had purged and changed the model and now loaded the extension again. why is settings showing Generation Status
+Generated today: 3 / 3
+Success rate: 100% (3 succeeded, 0 failed)
+0 art pieces cached
+
+and i dont see art pieces on new page yet
