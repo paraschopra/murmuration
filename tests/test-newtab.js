@@ -48,6 +48,8 @@ assert(html.includes('chatgpt.com'), 'Empty state links to ChatGPT');
 assert(html.includes('claude.ai'), 'Empty state links to Claude');
 assert(html.includes('target="_blank"'), 'External links open in new tab');
 assert(html.includes('id="sync-status"'), 'sync-status div exists');
+assert(html.includes('id="empty-settings-btn"'), 'No-art state has a Settings button');
+assert(html.includes('id="empty-blank-btn"'), 'No-art state has a Blank Page button');
 assert(html.includes('../shared/storage.js'), 'Loads storage.js');
 assert(html.includes('newtab.js'), 'Loads newtab.js');
 assert(html.includes('newtab.css'), 'Loads newtab.css');
@@ -80,6 +82,8 @@ assert(css.includes('display: none'), 'Info popup hidden by default');
 assert(css.includes('display: block'), 'Info popup shown on hover');
 assert(css.includes('#blank-state'), 'Blank page state is styled');
 assert(css.includes('#restore-art-btn'), 'Restore control is styled');
+assert(css.includes('.empty-actions'), 'No-art action buttons are styled');
+assert(css.includes('.btn-secondary'), 'Blank Page button has secondary styling');
 
 // --- JS Tests ---
 console.log('\n--- newtab.js ---');
@@ -115,11 +119,16 @@ assert(js.includes('artifacts.length <= 1'), 'Handles single artifact case');
 
 // Per-tab blank mode
 assert(js.includes('blank-btn'), 'Wires up blank page button');
-assert(js.includes("frame.src = 'about:blank'") || js.includes('frame.src = "about:blank"'),
+assert(js.includes(".src = 'about:blank'") || js.includes('.src = "about:blank"'),
   'Stops the running animation when blank mode starts');
 assert(js.includes("showState('blank-state')") || js.includes('showState("blank-state")'),
   'Blank mode only switches this new-tab page to its blank state');
 assert(js.includes('restore-art-btn'), 'Wires up restore art control');
+assert(js.includes('empty-settings-btn'), 'Wires up Settings from the no-art state');
+assert(js.includes('empty-blank-btn'), 'Wires up Blank Page from the no-art state');
+assert(js.includes('function enterBlankMode'), 'Blank mode is shared across art and no-art states');
+assert(js.includes("showState('empty-state')") || js.includes('showState("empty-state")'),
+  'Blank mode can restore the no-art state');
 
 // showSyncStatus
 assert(js.includes('function showSyncStatus') || js.includes('async function showSyncStatus'),

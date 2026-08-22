@@ -84,6 +84,16 @@ html, body {
   background: #555;
 }
 
+.btn-secondary {
+  background: #fff;
+  color: #555;
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+  background: #f5f5f5;
+}
+
 /* Art display */
 #art-display {
   position: relative;
@@ -250,5 +260,12 @@ html, body {
 #sync-status {
   font-size: 0.8rem;
   color: #999;
+  margin-top: 1rem;
+}
+
+.empty-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
   margin-top: 1rem;
 }

@@ -1,4 +1,8 @@
+let blankRestoreAction = null;
+
 async function init() {
+  setupPageActions();
+
   // Check for API key
   const settings = await chrome.storage.sync.get('apiKey');
   if (!settings.apiKey) {
@@ -93,13 +97,10 @@ function displayArtifact(artifacts) {
   // covering it up.
   document.getElementById('blank-btn').addEventListener('click', () => {
     sandboxReady = false;
-    frame.src = 'about:blank';
-    showState('blank-state');
-  });
-
-  document.getElementById('restore-art-btn').addEventListener('click', () => {
-    showState('art-display');
-    loadCurrentArtifact();
+    enterBlankMode(() => {
+      showState('art-display');
+      loadCurrentArtifact();
+    });
   });
 
   // Settings link
@@ -107,6 +108,30 @@ function displayArtifact(artifacts) {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
   });
+}
+
+function setupPageActions() {
+  document.getElementById('empty-settings-btn').addEventListener('click', () => {
+    chrome.runtime.openOptionsPage();
+  });
+
+  document.getElementById('empty-blank-btn').addEventListener('click', () => {
+    enterBlankMode(() => showState('empty-state'));
+  });
+
+  document.getElementById('restore-art-btn').addEventListener('click', () => {
+    if (!blankRestoreAction) return;
+    const restore = blankRestoreAction;
+    blankRestoreAction = null;
+    restore();
+  });
+}
+
+function enterBlankMode(restoreAction) {
+  blankRestoreAction = restoreAction;
+  // Navigating rather than covering the iframe stops any running animation.
+  document.getElementById('art-frame').src = 'about:blank';
+  showState('blank-state');
 }
 
 async function showSyncStatus() {

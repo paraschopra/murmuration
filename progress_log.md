@@ -53,3 +53,11 @@
 - Settings reports generating, success, missing-configuration, and 30-second timeout states after purge.
 - Verified storage behavior with 77 passing assertions and Settings integration with 91 passing assertions; `git diff --check` passed.
 - Next: checkpoint purge regeneration and add controls to the no-art state.
+
+## 2026-08-22T10:42:52+05:30
+
+- Committed purge-triggered regeneration as `eda3279` (`Regenerate fresh art after purge`).
+- Added visible Settings and Blank Page buttons to the `No art yet` state.
+- Centralized per-tab blank restoration so it returns to the correct prior state and still stops any iframe animation via `about:blank`.
+- Verified the new-tab UI with 92 passing assertions and `git diff --check`.
+- Next: checkpoint the no-art controls, update documentation, and run the full suite.
