@@ -107,13 +107,62 @@ async function purgeArtifacts() {
   }
 
   const confirmed = window.confirm(
-    `Permanently delete all ${artifacts.length} cached art pieces? This cannot be undone.`
+    `Permanently delete all ${artifacts.length} cached art pieces? ` +
+    'Today\'s generation count will reset and one fresh piece will be requested.'
   );
   if (!confirmed) return;
 
   await clearArtifacts();
+  await resetTodayGeneration();
   await loadStatus();
-  showArchiveStatus('Cached art purged. Open a new tab to generate with the current settings.');
+  await requestFreshArtifact();
+}
+
+async function requestFreshArtifact() {
+  const settings = await chrome.storage.sync.get('apiKey');
+  const conversations = await getConversations();
+  const hasTitles = conversations.some(conversation =>
+    Array.isArray(conversation.titles) && conversation.titles.length > 0
+  );
+
+  if (!settings.apiKey) {
+    showArchiveStatus('Cache reset. Add an API key before generating fresh art.', true);
+    return;
+  }
+  if (!hasTitles) {
+    showArchiveStatus('Cache reset. Visit ChatGPT or Claude to sync titles for fresh art.', true);
+    return;
+  }
+
+  showArchiveStatus('Cache reset. Generating fresh art with the current settings...');
+  chrome.runtime.sendMessage({ type: 'REQUEST_GENERATION' }, () => {
+    // The service worker does not send a response; consume the expected
+    // lastError so Chrome does not report an unchecked callback error.
+    void chrome.runtime.lastError;
+  });
+  await waitForFreshArtifact();
+}
+
+function waitForFreshArtifact() {
+  return new Promise(resolve => {
+    let attempts = 0;
+    const maxAttempts = 30;
+    const interval = setInterval(async () => {
+      attempts++;
+      const artifacts = await getArtifacts();
+      if (artifacts.length > 0) {
+        clearInterval(interval);
+        await loadStatus();
+        showArchiveStatus('Fresh art generated and ready for new tabs.');
+        resolve(true);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        await loadStatus();
+        showArchiveStatus('No fresh art arrived. Check Generation Status and try again.', true);
+        resolve(false);
+      }
+    }, 1000);
+  });
 }
 
 function showArchiveStatus(message, isError = false) {

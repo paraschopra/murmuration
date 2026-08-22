@@ -230,6 +230,16 @@ async function testDailyBudget() {
   can = await shouldGenerate();
   assert(can === false, 'shouldGenerate returns false at budget limit');
 
+  // Reset today's allowance after purging cached artifacts
+  store.local[STORAGE_KEYS.GENERATION_LOG]['2020-01-01'] = 2;
+  await resetTodayGeneration();
+  status = await getGenerationStatus();
+  assert(status.used === 0, 'resetTodayGeneration clears today\'s generation count');
+  can = await shouldGenerate();
+  assert(can === true, 'Generation is allowed after today\'s count is reset');
+  assert(store.local[STORAGE_KEYS.GENERATION_LOG]['2020-01-01'] === 2,
+    'resetTodayGeneration preserves generation history from other days');
+
   // Custom budget via chrome.storage.sync
   store.sync.dailyBudget = 5;
   can = await shouldGenerate();
@@ -336,6 +346,7 @@ async function testModuleExports() {
   assert(typeof clearArtifacts === 'function', 'clearArtifacts exported');
   assert(typeof shouldGenerate === 'function', 'shouldGenerate exported');
   assert(typeof recordGeneration === 'function', 'recordGeneration exported');
+  assert(typeof resetTodayGeneration === 'function', 'resetTodayGeneration exported');
   assert(typeof getGenerationStatus === 'function', 'getGenerationStatus exported');
   assert(typeof getTodayKey === 'function', 'getTodayKey exported');
   assert(typeof recordGenerationResult === 'function', 'recordGenerationResult exported');

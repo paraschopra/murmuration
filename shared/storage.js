@@ -106,6 +106,13 @@ async function recordGeneration() {
   await chrome.storage.local.set({ [STORAGE_KEYS.GENERATION_LOG]: pruned });
 }
 
+async function resetTodayGeneration() {
+  const logResult = await chrome.storage.local.get(STORAGE_KEYS.GENERATION_LOG);
+  const log = logResult[STORAGE_KEYS.GENERATION_LOG] || {};
+  delete log[getTodayKey()];
+  await chrome.storage.local.set({ [STORAGE_KEYS.GENERATION_LOG]: log });
+}
+
 async function getGenerationStatus() {
   const result = await chrome.storage.sync.get('dailyBudget');
   const budget = result.dailyBudget || DEFAULT_DAILY_BUDGET;
@@ -190,7 +197,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     saveConversation, getConversations, updateLastSynced, getLastSynced,
     saveArtifact, getArtifacts, clearArtifacts,
-    shouldGenerate, recordGeneration, getGenerationStatus, getTodayKey,
+    shouldGenerate, recordGeneration, resetTodayGeneration, getGenerationStatus, getTodayKey,
     recordGenerationResult, getGenerationStats,
     recordTokenUsage, getTokenUsage,
     STORAGE_KEYS, MAX_CONVERSATIONS, MAX_ARTIFACTS, DEFAULT_DAILY_BUDGET
@@ -200,7 +207,7 @@ if (typeof module !== 'undefined' && module.exports) {
   Object.assign(globalScope, {
     saveConversation, getConversations, updateLastSynced, getLastSynced,
     saveArtifact, getArtifacts, clearArtifacts,
-    shouldGenerate, recordGeneration, getGenerationStatus, getTodayKey,
+    shouldGenerate, recordGeneration, resetTodayGeneration, getGenerationStatus, getTodayKey,
     recordGenerationResult, getGenerationStats,
     recordTokenUsage, getTokenUsage,
     STORAGE_KEYS, MAX_CONVERSATIONS, MAX_ARTIFACTS, DEFAULT_DAILY_BUDGET

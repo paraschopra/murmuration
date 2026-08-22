@@ -105,8 +105,11 @@ assert(js.includes('art pieces cached'), 'Shows cached count text');
 assert(js.includes('createArtifactArchive'), 'Builds a ZIP containing cached HTML');
 assert(js.includes('URL.createObjectURL'), 'Creates a local archive download');
 assert(js.includes('clearArtifacts'), 'Purges cached artifacts through storage helper');
+assert(js.includes('resetTodayGeneration'), 'Purge resets today\'s generation allowance');
 assert(js.includes('window.confirm'), 'Requires confirmation before purging art');
 assert(js.includes('loadStatus'), 'Refreshes artifact count after archive actions');
+assert(js.includes('REQUEST_GENERATION'), 'Purge requests a fresh generation');
+assert(js.includes('waitForFreshArtifact'), 'Settings waits for and reports fresh art');
 
 // Token usage
 assert(html.includes('id="token-usage"'), 'Token usage container exists');

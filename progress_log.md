@@ -40,3 +40,16 @@
 - Full suite passed: 416 assertions across all nine test files, with zero failures.
 - Final review found no hard-coded three-title generation path, no new manifest permission requirement, and no whitespace errors.
 - Status: requested features are implemented and verified. Next user step is to reload the unpacked extension and perform a browser smoke test with real stored art.
+
+## 2026-08-22T10:40:42+05:30
+
+- Began follow-up after confirming purge currently retains today's generation count, which can prevent replacement art at the daily limit.
+- Planned behavior: purge artifacts, reset today's successful-generation allowance, request one fresh generation when API credentials and conversation titles exist, and report the result in Settings.
+- Also adding Settings and per-tab Blank Page actions to the `No art yet` state.
+
+## 2026-08-22T10:41:49+05:30
+
+- Purge now clears cached artifacts and today's generation count, then requests a fresh artifact when an API key and synced titles are available.
+- Settings reports generating, success, missing-configuration, and 30-second timeout states after purge.
+- Verified storage behavior with 77 passing assertions and Settings integration with 91 passing assertions; `git diff --check` passed.
+- Next: checkpoint purge regeneration and add controls to the no-art state.
