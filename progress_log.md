@@ -61,3 +61,15 @@
 - Centralized per-tab blank restoration so it returns to the correct prior state and still stops any iframe animation via `about:blank`.
 - Verified the new-tab UI with 92 passing assertions and `git diff --check`.
 - Next: checkpoint the no-art controls, update documentation, and run the full suite.
+
+## 2026-08-22T10:43:32+05:30
+
+- Committed no-art Settings/Blank Page controls as `5e00b32` (`Add controls to the no-art state`).
+- Updated README to describe purge-triggered regeneration, visible status feedback, and no-art screen actions.
+- Next: run all automated tests and review the final worktree.
+
+## 2026-08-22T10:43:55+05:30
+
+- Full regression suite passed: 431 assertions across all nine test files, with zero failures.
+- Final diff review and `git diff --check` passed.
+- Status: follow-up is complete. Reload the unpacked extension before browser-testing purge regeneration and the no-art controls.

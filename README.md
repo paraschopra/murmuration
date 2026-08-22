@@ -88,12 +88,12 @@ node tests/test-options.js
 - **Daily Budget**: Max art generations per day (default: 3, range: 1-20)
 - **Chat Titles per Generation**: Number of randomly selected titles supplied to each generation (default: 3, range: 1-20)
 - **Art Prompt**: Editable prompt template; place `{{topics}}` wherever the selected titles should be inserted
-- **Generated Art Archive**: Download all cached pages as separate HTML files in one ZIP, or purge only the cached pages
+- **Generated Art Archive**: Download all cached pages as separate HTML files in one ZIP. Purge clears the pages, resets today's generation count, and requests one fresh piece when an API key and synced titles are available.
 - **Custom Selectors**: Override CSS selectors for ChatGPT/Claude scraping
 
 Hover over the footer of an art tab and use the hollow-square button to stop the animation and blank only that tab. The tiny restore control in the bottom-right corner reopens the art; opening another new tab is unaffected.
 
-Purging cached art does not reset the daily generation limit. If the limit has already been reached, increase it or wait for the next day before a new prompt can generate another page.
+The `No art yet` screen also provides visible Settings and Blank Page buttons. After purging, Settings reports whether fresh art was generated or why generation could not start.
 
 ## Estimated Cost
 
