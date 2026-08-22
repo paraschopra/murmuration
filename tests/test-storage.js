@@ -91,6 +91,7 @@ async function testConversationStorage() {
   assert(STORAGE_KEYS.LAST_SYNCED === 'lastSynced', 'LAST_SYNCED key defined');
   assert(STORAGE_KEYS.GENERATION_LOG === 'generationLog', 'GENERATION_LOG key defined');
   assert(STORAGE_KEYS.GENERATION_STATS === 'generationStats', 'GENERATION_STATS key defined');
+  assert(STORAGE_KEYS.EMPTY_CACHE_RECOVERY === 'emptyCacheRecovery', 'EMPTY_CACHE_RECOVERY key defined');
 
   // getConversations returns empty array when empty
   let convos = await getConversations();
@@ -298,6 +299,42 @@ async function testGenerationStats() {
   assert(Object.keys(statsStore).length <= 7, 'Old stats entries pruned to 7 days');
 }
 
+async function testEmptyCacheRecovery() {
+  console.log('\n--- Empty Cache Recovery ---');
+  resetStore();
+
+  store.local[STORAGE_KEYS.GENERATION_LOG] = {
+    '2020-01-01': 2,
+    [getTodayKey()]: 3
+  };
+
+  let recovered = await recoverEmptyArtifactCache();
+  assert(recovered === true, 'Exhausted allowance is recovered when the artifact cache is empty');
+
+  let status = await getGenerationStatus();
+  assert(status.used === 0, 'Empty-cache recovery resets today\'s generation count');
+  assert(store.local[STORAGE_KEYS.GENERATION_LOG]['2020-01-01'] === 2,
+    'Empty-cache recovery preserves older generation history');
+  assert(store.local[STORAGE_KEYS.EMPTY_CACHE_RECOVERY] === getTodayKey(),
+    'Empty-cache recovery records today as the recovery date');
+
+  await recordGeneration();
+  await recordGeneration();
+  await recordGeneration();
+  recovered = await recoverEmptyArtifactCache();
+  assert(recovered === false, 'Empty-cache recovery only resets once per day');
+
+  resetStore();
+  await recordGeneration();
+  await recordGeneration();
+  await recordGeneration();
+  await saveArtifact({ id: 'art-present', html: '<html></html>', topics: ['topic'], timestamp: 1 });
+  recovered = await recoverEmptyArtifactCache();
+  status = await getGenerationStatus();
+  assert(recovered === false, 'Recovery does not run when cached art exists');
+  assert(status.used === 3, 'Normal exhausted allowance remains intact when cached art exists');
+}
+
 async function testTokenUsage() {
   console.log('\n--- Token Usage ---');
   resetStore();
@@ -347,6 +384,7 @@ async function testModuleExports() {
   assert(typeof shouldGenerate === 'function', 'shouldGenerate exported');
   assert(typeof recordGeneration === 'function', 'recordGeneration exported');
   assert(typeof resetTodayGeneration === 'function', 'resetTodayGeneration exported');
+  assert(typeof recoverEmptyArtifactCache === 'function', 'recoverEmptyArtifactCache exported');
   assert(typeof getGenerationStatus === 'function', 'getGenerationStatus exported');
   assert(typeof getTodayKey === 'function', 'getTodayKey exported');
   assert(typeof recordGenerationResult === 'function', 'recordGenerationResult exported');
@@ -362,6 +400,7 @@ async function testModuleExports() {
     await testLastSynced();
     await testArtifactStorage();
     await testDailyBudget();
+    await testEmptyCacheRecovery();
     await testGenerationStats();
     await testTokenUsage();
     await testModuleExports();

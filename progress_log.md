@@ -80,3 +80,15 @@
 - Confirmed extension reloads and model changes do not reset the local generation log or trigger an API request. The new-tab guard requires `todayCount < dailyBudget`, so `3 / 3` correctly blocks generation.
 - Confirmed the newer purge/reset path only runs on a new purge with at least one artifact; with zero cached artifacts its button is disabled, so it cannot repair this already-existing state.
 - No application code changed during this diagnostic. Immediate recovery: temporarily set the daily generation limit to 4, save, and open a new tab; with synced titles present this permits one fresh generation using the newly selected model.
+
+## 2026-08-22T10:51:14+05:30
+
+- Started a permanent recovery for users upgrading with the stale `0 artifacts` plus exhausted daily-count state.
+- Chosen safeguard: only when a new tab has no artifacts and has synced titles, automatically reset an exhausted allowance once per calendar day and request fresh art. Existing art and normal daily-limit paths remain unchanged.
+
+## 2026-08-22T10:52:23+05:30
+
+- Implemented the once-per-day empty-cache recovery marker and automatic new-tab repair path.
+- Recovery preserves older generation history, never runs when cached art exists, and requires usable synced titles before changing the allowance.
+- Verified storage behavior with 86 passing assertions, new-tab integration with 94 passing assertions, and `git diff --check`.
+- Next: checkpoint the recovery, update documentation, and run the full regression suite.

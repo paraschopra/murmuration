@@ -4,7 +4,8 @@ const STORAGE_KEYS = {
   LAST_SYNCED: 'lastSynced',
   GENERATION_LOG: 'generationLog',
   GENERATION_STATS: 'generationStats',
-  TOKEN_USAGE: 'tokenUsage'
+  TOKEN_USAGE: 'tokenUsage',
+  EMPTY_CACHE_RECOVERY: 'emptyCacheRecovery'
 };
 
 const MAX_CONVERSATIONS = 100;
@@ -113,6 +114,34 @@ async function resetTodayGeneration() {
   await chrome.storage.local.set({ [STORAGE_KEYS.GENERATION_LOG]: log });
 }
 
+async function recoverEmptyArtifactCache() {
+  const today = getTodayKey();
+  const [budgetResult, localResult] = await Promise.all([
+    chrome.storage.sync.get('dailyBudget'),
+    chrome.storage.local.get([
+      STORAGE_KEYS.ARTIFACTS,
+      STORAGE_KEYS.GENERATION_LOG,
+      STORAGE_KEYS.EMPTY_CACHE_RECOVERY
+    ])
+  ]);
+  const artifacts = localResult[STORAGE_KEYS.ARTIFACTS] || [];
+  const log = localResult[STORAGE_KEYS.GENERATION_LOG] || {};
+  const budget = budgetResult.dailyBudget || DEFAULT_DAILY_BUDGET;
+  const todayCount = log[today] || 0;
+  const lastRecovery = localResult[STORAGE_KEYS.EMPTY_CACHE_RECOVERY];
+
+  if (artifacts.length > 0 || todayCount < budget || lastRecovery === today) {
+    return false;
+  }
+
+  delete log[today];
+  await chrome.storage.local.set({
+    [STORAGE_KEYS.GENERATION_LOG]: log,
+    [STORAGE_KEYS.EMPTY_CACHE_RECOVERY]: today
+  });
+  return true;
+}
+
 async function getGenerationStatus() {
   const result = await chrome.storage.sync.get('dailyBudget');
   const budget = result.dailyBudget || DEFAULT_DAILY_BUDGET;
@@ -197,7 +226,8 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     saveConversation, getConversations, updateLastSynced, getLastSynced,
     saveArtifact, getArtifacts, clearArtifacts,
-    shouldGenerate, recordGeneration, resetTodayGeneration, getGenerationStatus, getTodayKey,
+    shouldGenerate, recordGeneration, resetTodayGeneration, recoverEmptyArtifactCache,
+    getGenerationStatus, getTodayKey,
     recordGenerationResult, getGenerationStats,
     recordTokenUsage, getTokenUsage,
     STORAGE_KEYS, MAX_CONVERSATIONS, MAX_ARTIFACTS, DEFAULT_DAILY_BUDGET
@@ -207,7 +237,8 @@ if (typeof module !== 'undefined' && module.exports) {
   Object.assign(globalScope, {
     saveConversation, getConversations, updateLastSynced, getLastSynced,
     saveArtifact, getArtifacts, clearArtifacts,
-    shouldGenerate, recordGeneration, resetTodayGeneration, getGenerationStatus, getTodayKey,
+    shouldGenerate, recordGeneration, resetTodayGeneration, recoverEmptyArtifactCache,
+    getGenerationStatus, getTodayKey,
     recordGenerationResult, getGenerationStats,
     recordTokenUsage, getTokenUsage,
     STORAGE_KEYS, MAX_CONVERSATIONS, MAX_ARTIFACTS, DEFAULT_DAILY_BUDGET

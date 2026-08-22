@@ -100,6 +100,8 @@ assert(js.includes('getArtifacts'), 'init calls getArtifacts');
 assert(js.includes('REQUEST_GENERATION'), 'Triggers generation from new tab if needed');
 assert(js.includes('shouldGenerate'), 'Checks budget before triggering');
 assert(js.includes('getConversations'), 'Checks conversations exist before triggering');
+assert(js.includes('recoverEmptyArtifactCache'), 'Recovers an exhausted allowance when the art cache is empty');
+assert(js.includes('hasTitles'), 'Requires usable synced titles before empty-cache recovery');
 assert(js.includes("showState('generating-state')") || js.includes('showState("generating-state")'),
   'Shows generating state when generation is triggered');
 assert(js.includes('pollForArtifacts'), 'Polls for artifacts after triggering generation');

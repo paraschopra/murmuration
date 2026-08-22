@@ -17,9 +17,20 @@ async function init() {
   const artifacts = await getArtifacts();
   if (!artifacts || artifacts.length === 0) {
     // Try to trigger generation if budget allows and conversations exist
-    const canGenerate = await shouldGenerate();
+    let canGenerate = await shouldGenerate();
     const conversations = await getConversations();
-    if (canGenerate && conversations.length > 0) {
+    const hasTitles = conversations.some(conversation =>
+      Array.isArray(conversation.titles) && conversation.titles.length > 0
+    );
+
+    // Repair the stale state produced by older purge behavior: no artifacts,
+    // usable titles, and a persisted exhausted allowance. Recovery is limited
+    // to once per calendar day so it cannot create an unbounded API loop.
+    if (!canGenerate && hasTitles) {
+      canGenerate = await recoverEmptyArtifactCache();
+    }
+
+    if (canGenerate && hasTitles) {
       showState('generating-state');
       chrome.runtime.sendMessage({ type: 'REQUEST_GENERATION' });
       // Poll for new artifacts while generating
