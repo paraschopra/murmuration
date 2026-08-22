@@ -20,3 +20,11 @@
 - Added a Reset Prompt control and generation tests for validation, placeholder substitution, and request payload behavior.
 - Verified with `node tests/test-art-generator.js` (61 passed), `node tests/test-options.js` (79 passed), `node tests/test-background.js` (15 passed), and `git diff --check`.
 - Next: checkpoint generation preferences, then add artifact download and purge actions.
+
+## 2026-08-22T10:50:00+05:30
+
+- Committed configurable title count and prompt settings as `3f4dd3e` (`Make generation prompt and topic count configurable`).
+- Added a dependency-free ZIP builder that packages each cached artifact as a separate HTML file for a single reliable download.
+- Added a confirmed purge action that clears only cached artifacts and refreshes Settings status; conversations, statistics, and daily limits are preserved.
+- Verified with `node tests/test-storage.js` (73 passed), `node tests/test-artifact-archive.js` (11 passed), `node tests/test-options.js` (88 passed), and `git diff --check`.
+- Next: checkpoint archive management, update documentation, and run the full suite.

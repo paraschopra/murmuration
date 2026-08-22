@@ -42,6 +42,9 @@ assert(html.includes('id="save-status"'), 'Save status area exists');
 assert(html.includes('id="gen-status"'), 'Generation status display exists');
 assert(html.includes('id="gen-stats"'), 'Generation stats display exists');
 assert(html.includes('id="artifact-count"'), 'Artifact count display exists');
+assert(html.includes('id="download-artifacts-btn"'), 'Download all HTML button exists');
+assert(html.includes('id="purge-artifacts-btn"'), 'Purge all art button exists');
+assert(html.includes('id="archive-status"'), 'Archive action status exists');
 assert(html.includes('data-platform="chatgpt"'), 'ChatGPT tab exists');
 assert(html.includes('data-platform="claude"'), 'Claude tab exists');
 assert(html.includes('id="primary-selector"'), 'Primary selector input exists');
@@ -49,6 +52,7 @@ assert(html.includes('id="fallback-selectors"'), 'Fallback selectors textarea ex
 assert(html.includes('id="save-selectors-btn"'), 'Save selectors button exists');
 assert(html.includes('../shared/storage.js'), 'Loads storage.js');
 assert(html.includes('../shared/art-generator.js'), 'Loads default prompt and topic settings');
+assert(html.includes('../shared/artifact-archive.js'), 'Loads HTML archive builder');
 assert(html.includes('options.js'), 'Loads options.js');
 assert(html.includes('options.css'), 'Loads options.css');
 
@@ -98,6 +102,11 @@ assert(js.includes('successRate'), 'Displays success rate');
 assert(js.includes('No attempts today'), 'Shows "No attempts today" when no attempts');
 assert(js.includes('getArtifacts'), 'Gets artifact count');
 assert(js.includes('art pieces cached'), 'Shows cached count text');
+assert(js.includes('createArtifactArchive'), 'Builds a ZIP containing cached HTML');
+assert(js.includes('URL.createObjectURL'), 'Creates a local archive download');
+assert(js.includes('clearArtifacts'), 'Purges cached artifacts through storage helper');
+assert(js.includes('window.confirm'), 'Requires confirmation before purging art');
+assert(js.includes('loadStatus'), 'Refreshes artifact count after archive actions');
 
 // Token usage
 assert(html.includes('id="token-usage"'), 'Token usage container exists');

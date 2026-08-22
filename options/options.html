@@ -46,6 +46,16 @@
     </section>
 
     <section class="section">
+      <h2>Generated Art Archive</h2>
+      <p class="hint">Download every cached page as HTML files in one ZIP, or purge cached art before trying a new prompt.</p>
+      <div class="button-row">
+        <button id="download-artifacts-btn" class="btn btn-secondary">Download All HTML</button>
+        <button id="purge-artifacts-btn" class="btn btn-danger">Purge All</button>
+      </div>
+      <div id="archive-status" class="status" role="status"></div>
+    </section>
+
+    <section class="section">
       <h2>Token Usage (Last 10 Days)</h2>
       <div id="token-usage">Loading...</div>
     </section>
@@ -73,6 +83,7 @@
 
   <script src="../shared/storage.js"></script>
   <script src="../shared/art-generator.js"></script>
+  <script src="../shared/artifact-archive.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

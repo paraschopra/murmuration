@@ -162,6 +162,10 @@ async function testArtifactStorage() {
   assert(arts.length === 2, 'Two artifacts stored');
   assert(arts[0].id === 'art-2', 'New artifact prepended');
 
+  await clearArtifacts();
+  arts = await getArtifacts();
+  assert(arts.length === 0, 'clearArtifacts purges all stored art');
+
   // Trims to MAX_ARTIFACTS (100)
   resetStore();
   for (let i = 0; i < 105; i++) {
@@ -329,6 +333,7 @@ async function testModuleExports() {
   assert(typeof getLastSynced === 'function', 'getLastSynced exported');
   assert(typeof saveArtifact === 'function', 'saveArtifact exported');
   assert(typeof getArtifacts === 'function', 'getArtifacts exported');
+  assert(typeof clearArtifacts === 'function', 'clearArtifacts exported');
   assert(typeof shouldGenerate === 'function', 'shouldGenerate exported');
   assert(typeof recordGeneration === 'function', 'recordGeneration exported');
   assert(typeof getGenerationStatus === 'function', 'getGenerationStatus exported');

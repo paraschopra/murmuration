@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('artPrompt').value = DEFAULT_ART_PROMPT;
     showSaveStatus('Default prompt restored. Save to apply it.');
   });
+  document.getElementById('download-artifacts-btn').addEventListener('click', downloadArtifacts);
+  document.getElementById('purge-artifacts-btn').addEventListener('click', purgeArtifacts);
 
   // Load generation status and stats
   await loadStatus();
@@ -74,6 +76,50 @@ async function loadStatus() {
   const artifacts = await getArtifacts();
   document.getElementById('artifact-count').textContent =
     `${artifacts.length} art pieces cached`;
+  document.getElementById('download-artifacts-btn').disabled = artifacts.length === 0;
+  document.getElementById('purge-artifacts-btn').disabled = artifacts.length === 0;
+}
+
+async function downloadArtifacts() {
+  const artifacts = await getArtifacts();
+  if (artifacts.length === 0) {
+    showArchiveStatus('No generated art to download.', true);
+    return;
+  }
+
+  const archive = createArtifactArchive(artifacts);
+  const url = URL.createObjectURL(archive);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `murmuration-html-${new Date().toISOString().slice(0, 10)}.zip`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showArchiveStatus(`Downloaded ${artifacts.length} HTML ${artifacts.length === 1 ? 'file' : 'files'}.`);
+}
+
+async function purgeArtifacts() {
+  const artifacts = await getArtifacts();
+  if (artifacts.length === 0) {
+    showArchiveStatus('There is no generated art to purge.', true);
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Permanently delete all ${artifacts.length} cached art pieces? This cannot be undone.`
+  );
+  if (!confirmed) return;
+
+  await clearArtifacts();
+  await loadStatus();
+  showArchiveStatus('Cached art purged. Open a new tab to generate with the current settings.');
+}
+
+function showArchiveStatus(message, isError = false) {
+  const statusEl = document.getElementById('archive-status');
+  statusEl.textContent = message;
+  statusEl.classList.toggle('status-error', isError);
 }
 
 async function loadTokenUsage() {

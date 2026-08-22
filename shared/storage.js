@@ -70,6 +70,10 @@ async function getArtifacts() {
   return result[STORAGE_KEYS.ARTIFACTS] || [];
 }
 
+async function clearArtifacts() {
+  await chrome.storage.local.set({ [STORAGE_KEYS.ARTIFACTS]: [] });
+}
+
 // --- Daily budget tracking ---
 
 function getTodayKey() {
@@ -185,7 +189,7 @@ async function getTokenUsage() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     saveConversation, getConversations, updateLastSynced, getLastSynced,
-    saveArtifact, getArtifacts,
+    saveArtifact, getArtifacts, clearArtifacts,
     shouldGenerate, recordGeneration, getGenerationStatus, getTodayKey,
     recordGenerationResult, getGenerationStats,
     recordTokenUsage, getTokenUsage,
@@ -195,7 +199,7 @@ if (typeof module !== 'undefined' && module.exports) {
   const globalScope = typeof self !== 'undefined' ? self : window;
   Object.assign(globalScope, {
     saveConversation, getConversations, updateLastSynced, getLastSynced,
-    saveArtifact, getArtifacts,
+    saveArtifact, getArtifacts, clearArtifacts,
     shouldGenerate, recordGeneration, getGenerationStatus, getTodayKey,
     recordGenerationResult, getGenerationStats,
     recordTokenUsage, getTokenUsage,
