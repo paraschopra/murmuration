@@ -39,6 +39,9 @@ assert(html.includes('id="art-topics"'), 'art-topics element exists');
 assert(html.includes('id="art-budget"'), 'art-budget element exists');
 assert(html.includes('id="refresh-btn"'), 'refresh button exists');
 assert(html.includes('&#x21bb;') || html.includes('\u21bb'), 'Refresh button has refresh icon');
+assert(html.includes('id="blank-btn"'), 'per-tab blank button exists');
+assert(html.includes('id="blank-state"'), 'blank page state exists');
+assert(html.includes('id="restore-art-btn"'), 'blank page can restore the art');
 assert(html.includes('id="settings-link"'), 'settings link exists');
 assert(html.includes('&#x2699;') || html.includes('\u2699'), 'Settings link has gear icon');
 assert(html.includes('chatgpt.com'), 'Empty state links to ChatGPT');
@@ -75,6 +78,8 @@ assert(css.includes('opacity: 1'), 'Footer visible on hover');
 assert(css.includes('#info-popup'), 'Info popup styled');
 assert(css.includes('display: none'), 'Info popup hidden by default');
 assert(css.includes('display: block'), 'Info popup shown on hover');
+assert(css.includes('#blank-state'), 'Blank page state is styled');
+assert(css.includes('#restore-art-btn'), 'Restore control is styled');
 
 // --- JS Tests ---
 console.log('\n--- newtab.js ---');
@@ -107,6 +112,14 @@ assert(js.includes('refresh-btn'), 'Wires up refresh button');
 assert(js.includes('nextIndex') || js.includes('currentIndex'), 'Tracks current index for non-repeat');
 assert(js.includes('while') && js.includes('currentIndex'), 'Avoids repeating same artifact');
 assert(js.includes('artifacts.length <= 1'), 'Handles single artifact case');
+
+// Per-tab blank mode
+assert(js.includes('blank-btn'), 'Wires up blank page button');
+assert(js.includes("frame.src = 'about:blank'") || js.includes('frame.src = "about:blank"'),
+  'Stops the running animation when blank mode starts');
+assert(js.includes("showState('blank-state')") || js.includes('showState("blank-state")'),
+  'Blank mode only switches this new-tab page to its blank state');
+assert(js.includes('restore-art-btn'), 'Wires up restore art control');
 
 // showSyncStatus
 assert(js.includes('function showSyncStatus') || js.includes('async function showSyncStatus'),

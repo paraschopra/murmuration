@@ -178,7 +178,7 @@ html, body {
   gap: 8px;
 }
 
-#refresh-btn {
+.icon-btn {
   background: none;
   border: 1px solid #ddd;
   border-radius: 50%;
@@ -192,9 +192,38 @@ html, body {
   justify-content: center;
 }
 
-#refresh-btn:hover {
+.icon-btn:hover {
   color: #333;
   border-color: #999;
+}
+
+#blank-btn {
+  font-size: 0.7rem;
+}
+
+/* Per-tab blank mode */
+#blank-state {
+  position: relative;
+  background: #fff;
+}
+
+#restore-art-btn {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #ddd;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+#restore-art-btn:hover,
+#restore-art-btn:focus-visible {
+  opacity: 1;
 }
 
 #settings-link {

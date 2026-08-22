@@ -58,13 +58,17 @@ function displayArtifact(artifacts) {
     topicsEl.textContent = artifact.topics.join(' \u00b7 ');
   }
 
+  function loadCurrentArtifact() {
+    sandboxReady = false;
+    frame.addEventListener('load', () => {
+      sandboxReady = true;
+      showArtifact(currentIndex);
+    }, { once: true });
+    frame.src = '../sandbox.html';
+  }
+
   // Load sandbox page, then send first artifact via postMessage
-  frame.src = '../sandbox.html';
-  frame.addEventListener('load', function onLoad() {
-    frame.removeEventListener('load', onLoad);
-    sandboxReady = true;
-    showArtifact(currentIndex);
-  });
+  loadCurrentArtifact();
 
   // Show budget status
   getGenerationStatus().then(status => {
@@ -82,6 +86,20 @@ function displayArtifact(artifacts) {
     } while (nextIndex === currentIndex);
     currentIndex = nextIndex;
     showArtifact(currentIndex);
+  });
+
+  // Blank mode is deliberately scoped to this page instance. Navigating the
+  // iframe to about:blank also stops the current animation instead of merely
+  // covering it up.
+  document.getElementById('blank-btn').addEventListener('click', () => {
+    sandboxReady = false;
+    frame.src = 'about:blank';
+    showState('blank-state');
+  });
+
+  document.getElementById('restore-art-btn').addEventListener('click', () => {
+    showState('art-display');
+    loadCurrentArtifact();
   });
 
   // Settings link
