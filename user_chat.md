@@ -20,3 +20,7 @@ and i dont see art pieces on new page yet
 ## 2026-08-22T10:51:14+05:30
 
 in future, this can recur with other users
+
+## 2026-08-22T10:56:16+05:30
+
+can we commit changes, add a commit message and push it to remote repo
