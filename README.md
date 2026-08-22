@@ -11,6 +11,7 @@ A Chrome extension that transforms your ChatGPT and Claude conversation topics i
 1. **Scrapes** conversation titles from ChatGPT and Claude sidebars via content scripts
 2. **Generates** self-contained HTML/CSS/JS art pieces via OpenRouter LLM API
 3. **Displays** art in a sandboxed iframe on every new tab, biased towards recent pieces (exponential decay with factor 0.95). The refresh button picks uniformly at random from all stored art. Up to 100 artifacts are kept.
+4. **Lets you experiment** with how many chat titles are selected and the prompt sent to the model, then download or purge the generated HTML archive from Settings.
 
 ![Murmuration preview](murmuration.gif)
 
@@ -24,13 +25,14 @@ murmuration/
 ├── shared/
 │   ├── storage.js             # Chrome storage abstraction (conversations, artifacts, budget, stats)
 │   ├── api-client.js          # OpenRouter API client
-│   └── art-generator.js       # LLM prompt builder, HTML parser, CSP injection
+│   ├── art-generator.js       # Configurable LLM prompt builder, HTML parser, CSP injection
+│   └── artifact-archive.js    # Dependency-free ZIP export for generated HTML
 ├── content-scripts/
 │   ├── chatgpt.js             # Scrapes ChatGPT sidebar conversation titles
 │   └── claude.js              # Scrapes Claude sidebar conversation titles
 ├── newtab/
-│   ├── newtab.html            # New tab override page (4 states: loading, onboarding, art, empty)
-│   ├── newtab.js              # New tab logic (display artifacts, refresh, trigger generation)
+│   ├── newtab.html            # New tab override page, including per-tab blank mode
+│   ├── newtab.js              # Display, refresh, blank/restore, and generation triggering
 │   └── newtab.css             # Minimal full-viewport styling
 ├── options/
 │   ├── options.html           # Settings page (API config, stats, custom selectors)
@@ -47,6 +49,7 @@ murmuration/
 │   ├── test-storage.js        # Storage functions with mock chrome.storage
 │   ├── test-api-client.js     # API client with mock fetch
 │   ├── test-art-generator.js  # Art generation pipeline
+│   ├── test-artifact-archive.js # Generated HTML ZIP export
 │   ├── test-background.js     # Service worker orchestration
 │   ├── test-content-scripts.js# Content script structure validation
 │   ├── test-newtab.js         # New tab page structure
@@ -71,6 +74,7 @@ node tests/test-manifest.js
 node tests/test-storage.js
 node tests/test-api-client.js
 node tests/test-art-generator.js
+node tests/test-artifact-archive.js
 node tests/test-background.js
 node tests/test-content-scripts.js
 node tests/test-newtab.js
@@ -82,7 +86,14 @@ node tests/test-options.js
 - **API Key**: OpenRouter API key (required)
 - **Model**: OpenRouter model ID (default: `anthropic/claude-sonnet-4-20250514`)
 - **Daily Budget**: Max art generations per day (default: 3, range: 1-20)
+- **Chat Titles per Generation**: Number of randomly selected titles supplied to each generation (default: 3, range: 1-20)
+- **Art Prompt**: Editable prompt template; place `{{topics}}` wherever the selected titles should be inserted
+- **Generated Art Archive**: Download all cached pages as separate HTML files in one ZIP, or purge only the cached pages
 - **Custom Selectors**: Override CSS selectors for ChatGPT/Claude scraping
+
+Hover over the footer of an art tab and use the hollow-square button to stop the animation and blank only that tab. The tiny restore control in the bottom-right corner reopens the art; opening another new tab is unaffected.
+
+Purging cached art does not reset the daily generation limit. If the limit has already been reached, increase it or wait for the next day before a new prompt can generate another page.
 
 ## Estimated Cost
 
